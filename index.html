@@ -560,19 +560,23 @@ function renderBest() {
     <div class="card">
       <div class="card-title">Gesamtrangliste</div>
       <div class="card-sub">Ø Punkte/Spiel über alle Saisonen</div>
-      ${filtered.map((r,i) => {
+  ${filtered.map((r,i) => {
         const avg = parseFloat(r.alltime_avg);
         const c   = PLAYER_COLORS[r.player] || "#888";
         const w   = winCounts[r.player] || 0;
         const bw  = Math.max(0,(1-(avg-1.4)/(3.0-1.4))*100);
+        
+        // Pokal-String sicher zusammenbauen ohne verschachtelte Backticks
+        const trophyStr = w ? " " + "🏆".repeat(Math.min(w,4)) : "";
+        const deadStr   = !r.active ? " †" : "";
+
         return `
           <div class="rank-row">
             <div class="rank-num">#${i+1}</div>
             <div style="flex:1;min-width:0">
               <div style="display:flex;justify-content:space-between;align-items:center">
                 <span class="rank-name" style="color:${c}">
-                  ${r.player}${!r.active?' †':''}
-                  ${w?` ${'🏆'.repeat(Math.min(w,4))}':''}
+                  ${r.player}${deadStr}${trophyStr}
                 </span>
                 <span class="rank-avg">${avg.toFixed(4)}</span>
               </div>
@@ -584,7 +588,7 @@ function renderBest() {
               </div>
             </div>
           </div>`
-      }).join("")}
+      }).join("")}  
     </div>
 
     <div class="card">
