@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#080c14">
+<meta name="theme-color" content="#f4f6f9">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Doko">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -15,14 +15,14 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap');
 
 :root {
-  --bg:       #080c14;
-  --bg2:      #0c1220;
-  --bg3:      #111827;
-  --border:   #1e2d40;
-  --border2:  #2d3748;
-  --text:     #e2e8f0;
-  --muted:    #4a5568;
-  --accent:   #e63946;
+  --bg:       #f4f6f9;
+  --bg2:      #ffffff;
+  --bg3:      #eef1f5;
+  --border:   #dde3ea;
+  --border2:  #c8d0da;
+  --text:     #1a2332;
+  --muted:    #7a8fa6;
+  --accent:   #d62f3b;
   --gold:     #FFD700;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bot: env(safe-area-inset-bottom, 0px);
@@ -41,7 +41,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Mono','Courier New',
   display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
 }
 #header h1{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;
-  color:#fff;letter-spacing:-.3px;line-height:1;}
+  color:var(--text);letter-spacing:-.3px;line-height:1;}
 #header h1 span{color:var(--accent);}
 #header .season-badge{font-size:10px;color:var(--muted);letter-spacing:.5px;}
 #sync-btn{background:transparent;border:1px solid var(--border2);color:var(--muted);
@@ -70,7 +70,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Mono','Courier New',
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;
   padding:16px;margin-bottom:12px;}
 .card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;
-  color:#fff;margin-bottom:12px;}
+  color:var(--text);margin-bottom:12px;}
 .card-sub{font-size:10px;color:var(--muted);margin-bottom:14px;margin-top:-8px;}
 
 /* ── Rank rows ── */
@@ -102,11 +102,11 @@ canvas{display:block;max-width:100%;}
 .leg-chip.off{opacity:.3;}
 
 /* ── Entry form ── */
-.pin-overlay{position:fixed;inset:0;background:rgba(8,12,20,.92);display:flex;
+.pin-overlay{position:fixed;inset:0;background:rgba(244,246,249,.92);display:flex;
   align-items:center;justify-content:center;z-index:50;backdrop-filter:blur(4px);}
 .pin-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;
   padding:28px 24px;width:280px;}
-.pin-box h2{font-family:'Syne',sans-serif;font-size:16px;color:#fff;margin-bottom:16px;}
+.pin-box h2{font-family:'Syne',sans-serif;font-size:16px;color:var(--text);margin-bottom:16px;}
 .pin-input{width:100%;background:var(--bg3);border:1px solid var(--border2);
   color:var(--text);padding:10px 12px;border-radius:6px;font-family:inherit;
   font-size:18px;letter-spacing:8px;text-align:center;margin-bottom:12px;}
@@ -170,7 +170,7 @@ canvas{display:block;max-width:100%;}
   padding:40px;color:var(--muted);font-size:12px;}
 
 /* ── Offline banner ── */
-#offline{display:none;background:#1a0c0c;border-bottom:1px solid var(--accent);
+#offline{display:none;background:#fff0f1;border-bottom:1px solid var(--accent);
   padding:6px 16px;font-size:10px;color:var(--accent);text-align:center;}
 body.offline #offline{display:block;}
 
@@ -187,7 +187,7 @@ body.offline #offline{display:block;}
 <div id="app">
   <div id="header">
     <div>
-      <h1>Doppelkopf <span>Gladiatoren</span></h1>
+      <h1>Doppelkopf <span>Liste</span></h1>
       <div class="season-badge" id="header-sub">Lade…</div>
     </div>
     <button id="sync-btn" onclick="syncAll()">↻ Sync</button>
@@ -252,9 +252,9 @@ const KEY  = CFG.supabaseKey || "";
 const PIN  = CFG.entryPin   || "1234";
 
 const PLAYER_COLORS = {
-  Lutz:"#FFD700",Anja:"#E91E63",Rolo:"#9C27B0",Reinhold:"#4CAF50",
-  Jörg:"#e63946",Andy:"#2196F3",Pete:"#00BCD4",Frank:"#795548",
-  Armin:"#FF9800",Peter:"#607D8B",Laurel:"#CDDC39"
+  Lutz:"#B8860B",Anja:"#C2185B",Rolo:"#7B1FA2",Reinhold:"#2E7D32",
+  Jörg:"#C62828",Andy:"#1565C0",Pete:"#00838F",Frank:"#4E342E",
+  Armin:"#E65100",Peter:"#455A64",Laurel:"#558B2F"
 };
 
 // ── State ─────────────────────────────────────────────────────────
@@ -423,7 +423,7 @@ function renderSaison() {
         ].map(([k,v]) => `
           <div style="background:var(--bg3);border-radius:6px;padding:10px">
             <div style="font-size:9px;color:var(--muted);margin-bottom:4px">${k}</div>
-            <div style="font-size:16px;font-weight:700;color:#fff">${v}</div>
+            <div style="font-size:16px;font-weight:700;color:var(--text)">${v}</div>
           </div>`).join("")}
       </div>
     </div>`;
@@ -440,8 +440,7 @@ const YEARS_ALL = [2002,2005,2006,2008,2009,2010,2011,2012,2013,2014,2015,2016,2
 function renderVerlauf() {
   // Build vis set from history data
   if (S.chartVis.size === 0) {
-    const active = S.players.filter(p => p.active).map(p => p.name);
-    active.forEach(n => S.chartVis.add(n));
+    S.history.forEach(r => S.chartVis.add(r.player));
   }
 
   // Build chart data from history
@@ -454,7 +453,7 @@ function renderVerlauf() {
     const on = S.chartVis.has(p);
     const c  = PLAYER_COLORS[p] || "#888";
     return `<div class="leg-chip ${on?'':'off'}"
-      style="color:${c};border-color:${on?c:'#2d3748'};background:${on?c+'18':'transparent'}"
+      style="color:${c};border-color:${on?c:'#c8d0da'};background:${on?c+'18':'transparent'}"
       onclick="toggleChartPlayer('${p}')">${p}</div>`;
   }).join("");
 
@@ -483,15 +482,15 @@ function drawChart(years, players) {
   [1.0,1.5,2.0,2.5,3.0].forEach(v => {
     const y = yp(v);
     ctx.beginPath(); ctx.moveTo(PAD.l,y); ctx.lineTo(w-PAD.r,y);
-    ctx.strokeStyle = v===2?"#2d3748":"#1a2234";
+    ctx.strokeStyle = v===2?"#c8d0da":"#dde3ea";
     ctx.setLineDash(v===2?[4,4]:[]); ctx.lineWidth=1; ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle="#4a5568"; ctx.font="9px 'Courier New'";
+    ctx.fillStyle="#7a8fa6"; ctx.font="9px 'Courier New'";
     ctx.textAlign="right"; ctx.fillText(v.toFixed(1), PAD.l-4, y+4);
   });
 
   // X labels
-  ctx.fillStyle="#4a5568"; ctx.font="9px 'Courier New'"; ctx.textAlign="center";
+  ctx.fillStyle="#7a8fa6"; ctx.font="9px 'Courier New'"; ctx.textAlign="center";
   years.forEach((yr,i) => ctx.fillText(String(yr).slice(2)+(yr===2025?"*":""), xp(i), h-PAD.b+14));
 
   // Lines
@@ -565,7 +564,7 @@ function renderBest() {
         const c   = PLAYER_COLORS[r.player] || "#888";
         const w   = winCounts[r.player] || 0;
         const bw  = Math.max(0,(1-(avg-1.4)/(3.0-1.4))*100);
-        
+
         // Pokal-String sicher zusammenbauen ohne verschachtelte Backticks
         const trophyStr = w ? " " + "🏆".repeat(Math.min(w,4)) : "";
         const deadStr   = !r.active ? " †" : "";
@@ -588,7 +587,7 @@ function renderBest() {
               </div>
             </div>
           </div>`
-      }).join("")}  
+      }).join("")}
     </div>
 
     <div class="card">
