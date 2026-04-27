@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#080c14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Doko">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Doppelkopf Gladiatoren</title>
+<script src="config.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap');
+
+:root {
+  --bg:       #080c14;
+  --bg2:      #0c1220;
+  --bg3:      #111827;
+  --border:   #1e2d40;
+  --border2:  #2d3748;
+  --text:     #e2e8f0;
+  --muted:    #4a5568;
+  --accent:   #e63946;
+  --gold:     #FFD700;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono','Courier New',monospace;
+  font-size:13px;display:flex;flex-direction:column;}
+
+/* ── Layout ── */
+#app{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+#header{
+  padding:calc(var(--safe-top) + 12px) 16px 12px;
+  background:var(--bg);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+#header h1{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;
+  color:#fff;letter-spacing:-.3px;line-height:1;}
+#header h1 span{color:var(--accent);}
+#header .season-badge{font-size:10px;color:var(--muted);letter-spacing:.5px;}
+#sync-btn{background:transparent;border:1px solid var(--border2);color:var(--muted);
+  padding:4px 10px;border-radius:4px;font-family:inherit;font-size:10px;cursor:pointer;}
+#sync-btn.syncing{color:var(--accent);border-color:var(--accent);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+#views{flex:1;overflow:hidden;position:relative;}
+.view{position:absolute;inset:0;overflow-y:auto;padding:16px;display:none;
+  -webkit-overflow-scrolling:touch;}
+.view.active{display:block;}
+
+/* ── Bottom Nav ── */
+#nav{
+  display:flex;background:var(--bg2);border-top:1px solid var(--border);
+  padding-bottom:var(--safe-bot);flex-shrink:0;
+}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:8px 4px;background:transparent;border:none;cursor:pointer;
+  color:var(--muted);font-family:inherit;font-size:9px;letter-spacing:.3px;
+  transition:color .15s;}
+.nav-btn.active{color:var(--accent);}
+.nav-btn svg{width:20px;height:20px;stroke-width:1.8;}
+
+/* ── Cards ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  padding:16px;margin-bottom:12px;}
+.card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;
+  color:#fff;margin-bottom:12px;}
+.card-sub{font-size:10px;color:var(--muted);margin-bottom:14px;margin-top:-8px;}
+
+/* ── Rank rows ── */
+.rank-row{display:flex;align-items:center;gap:10px;padding:8px 0;
+  border-bottom:1px solid var(--border);}
+.rank-row:last-child{border-bottom:none;}
+.rank-num{font-size:11px;color:var(--muted);min-width:22px;text-align:right;}
+.rank-medal{font-size:16px;min-width:22px;text-align:center;}
+.rank-name{font-weight:600;font-size:13px;flex:1;}
+.rank-avg{font-size:13px;font-weight:700;color:var(--text);}
+.rank-games{font-size:10px;color:var(--muted);min-width:50px;text-align:right;}
+.rank-bar-wrap{width:100%;height:3px;background:var(--border);border-radius:2px;
+  margin-top:4px;overflow:hidden;}
+.rank-bar{height:100%;border-radius:2px;}
+
+/* ── Season selector ── */
+.season-tabs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px;}
+.season-tab{background:transparent;border:1px solid var(--border2);color:var(--muted);
+  padding:4px 10px;border-radius:4px;font-family:inherit;font-size:10px;cursor:pointer;}
+.season-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+/* ── Chart ── */
+.chart-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  padding:12px 6px 6px;margin-bottom:12px;overflow:hidden;}
+canvas{display:block;max-width:100%;}
+.chart-legend{display:flex;flex-wrap:wrap;gap:6px;padding:8px 6px 2px;}
+.leg-chip{display:flex;align-items:center;gap:5px;font-size:10px;
+  padding:2px 8px;border-radius:20px;border:1px solid;cursor:pointer;transition:opacity .15s;}
+.leg-chip.off{opacity:.3;}
+
+/* ── Entry form ── */
+.pin-overlay{position:fixed;inset:0;background:rgba(8,12,20,.92);display:flex;
+  align-items:center;justify-content:center;z-index:50;backdrop-filter:blur(4px);}
+.pin-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  padding:28px 24px;width:280px;}
+.pin-box h2{font-family:'Syne',sans-serif;font-size:16px;color:#fff;margin-bottom:16px;}
+.pin-input{width:100%;background:var(--bg3);border:1px solid var(--border2);
+  color:var(--text);padding:10px 12px;border-radius:6px;font-family:inherit;
+  font-size:18px;letter-spacing:8px;text-align:center;margin-bottom:12px;}
+.pin-input:focus{outline:none;border-color:var(--accent);}
+.pin-error{font-size:11px;color:var(--accent);text-align:center;min-height:14px;margin-bottom:8px;}
+
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-size:10px;color:var(--muted);margin-bottom:5px;
+  letter-spacing:.5px;text-transform:uppercase;}
+.form-input,.form-select{width:100%;background:var(--bg3);border:1px solid var(--border2);
+  color:var(--text);padding:9px 12px;border-radius:6px;font-family:inherit;font-size:12px;}
+.form-input:focus,.form-select:focus{outline:none;border-color:var(--accent);}
+.form-select option{background:var(--bg3);}
+
+.player-entry{background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:12px;margin-bottom:8px;}
+.player-entry-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.player-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.player-entry-name{font-weight:600;font-size:12px;flex:1;}
+.player-toggle{background:var(--border);border:none;color:var(--muted);padding:3px 8px;
+  border-radius:4px;font-family:inherit;font-size:10px;cursor:pointer;}
+.player-toggle.on{background:var(--accent);color:#fff;}
+.player-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.player-fields.hidden{display:none;}
+.field-label{font-size:9px;color:var(--muted);margin-bottom:3px;}
+.field-input{width:100%;background:var(--bg2);border:1px solid var(--border2);
+  color:var(--text);padding:7px 10px;border-radius:5px;font-family:inherit;
+  font-size:14px;text-align:center;}
+.field-input:focus{outline:none;border-color:var(--accent);}
+
+/* ── Buttons ── */
+.btn{width:100%;padding:12px;border-radius:8px;border:none;font-family:inherit;
+  font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:active{opacity:.85;}
+.btn-secondary{background:transparent;color:var(--muted);border:1px solid var(--border2);}
+.btn-sm{padding:6px 14px;border-radius:5px;font-size:11px;width:auto;}
+
+/* ── All-time ── */
+.wins-bar{display:flex;gap:4px;align-items:center;}
+.wins-seg{height:8px;border-radius:2px;}
+.timeline-row{display:flex;align-items:center;gap:10px;padding:4px 0;
+  border-bottom:1px solid var(--border);}
+.timeline-row:last-child{border-bottom:none;}
+
+/* ── Toast ── */
+#toast{position:fixed;bottom:calc(70px + var(--safe-bot));left:50%;
+  transform:translateX(-50%) translateY(20px);background:var(--bg3);
+  border:1px solid var(--border2);border-radius:8px;padding:10px 18px;
+  font-size:12px;opacity:0;transition:all .25s;pointer-events:none;
+  white-space:nowrap;z-index:100;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast.error{border-color:var(--accent);color:var(--accent);}
+#toast.success{border-color:#4CAF50;color:#4CAF50;}
+
+/* ── Loading ── */
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border2);
+  border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-wrap{display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:40px;color:var(--muted);font-size:12px;}
+
+/* ── Offline banner ── */
+#offline{display:none;background:#1a0c0c;border-bottom:1px solid var(--accent);
+  padding:6px 16px;font-size:10px;color:var(--accent);text-align:center;}
+body.offline #offline{display:block;}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:2px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div id="offline">⚡ Offline – zeige gecachte Daten</div>
+
+<div id="app">
+  <div id="header">
+    <div>
+      <h1>Doppelkopf <span>Gladiatoren</span></h1>
+      <div class="season-badge" id="header-sub">Lade…</div>
+    </div>
+    <button id="sync-btn" onclick="syncAll()">↻ Sync</button>
+  </div>
+
+  <div id="views">
+    <!-- ── SAISON ── -->
+    <div id="view-saison" class="view active">
+      <div id="saison-seasons" class="season-tabs"></div>
+      <div id="saison-content"><div class="loading-wrap"><div class="spinner"></div>Lade…</div></div>
+    </div>
+
+    <!-- ── VERLAUF ── -->
+    <div id="view-verlauf" class="view">
+      <div class="chart-wrap">
+        <canvas id="chart" height="300"></canvas>
+      </div>
+      <div class="chart-legend" id="chart-legend"></div>
+      <p style="font-size:9px;color:var(--muted);margin-top:6px;padding:0 4px">
+        Y-Achse: Ø Punkte/Spiel (niedriger = besser) · * 2025 laufend
+      </p>
+    </div>
+
+    <!-- ── BESTENLISTE ── -->
+    <div id="view-best" class="view">
+      <div id="best-content"><div class="loading-wrap"><div class="spinner"></div>Lade…</div></div>
+    </div>
+
+    <!-- ── EINTRAGEN ── -->
+    <div id="view-entry" class="view">
+      <div id="entry-content"></div>
+    </div>
+  </div>
+
+  <nav id="nav">
+    <button class="nav-btn active" onclick="showView('saison',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      SAISON
+    </button>
+    <button class="nav-btn" onclick="showView('verlauf',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      VERLAUF
+    </button>
+    <button class="nav-btn" onclick="showView('best',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      BESTENLISTE
+    </button>
+    <button class="nav-btn" onclick="showView('entry',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      EINTRAGEN
+    </button>
+  </nav>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Config & Constants ────────────────────────────────────────────
+const CFG  = window.DOKO_CONFIG || {};
+const BASE = CFG.supabaseUrl || "";
+const KEY  = CFG.supabaseKey || "";
+const PIN  = CFG.entryPin   || "1234";
+
+const PLAYER_COLORS = {
+  Lutz:"#FFD700",Anja:"#E91E63",Rolo:"#9C27B0",Reinhold:"#4CAF50",
+  Jörg:"#e63946",Andy:"#2196F3",Pete:"#00BCD4",Frank:"#795548",
+  Armin:"#FF9800",Peter:"#607D8B",Laurel:"#CDDC39"
+};
+
+// ── State ─────────────────────────────────────────────────────────
+const S = {
+  seasons: [],
+  summary: [],         // v_season_summary rows
+  history: [],         // v_rank_history rows
+  alltime: [],         // v_alltime_ranking rows
+  players: [],         // players table
+  currentYear: CFG.currentSeason || new Date().getFullYear(),
+  selectedYear: CFG.currentSeason || new Date().getFullYear(),
+  chartVis: new Set(), // visible players in chart
+  pinUnlocked: false,
+};
+
+// ── API ───────────────────────────────────────────────────────────
+async function api(path, opts = {}) {
+  const url = BASE + "/rest/v1/" + path;
+  const res = await fetch(url, {
+    headers: {
+      apikey: KEY,
+      Authorization: "Bearer " + KEY,
+      "Content-Type": "application/json",
+      Prefer: opts.prefer || "return=representation",
+      ...opts.headers,
+    },
+    ...opts,
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  const ct = res.headers.get("content-type") || "";
+  if (ct.includes("json") && res.status !== 204) return res.json();
+  return null;
+}
+
+async function syncAll() {
+  const btn = document.getElementById("sync-btn");
+  btn.classList.add("syncing");
+  btn.textContent = "↻ …";
+  try {
+    await Promise.all([
+      loadSummary(),
+      loadHistory(),
+      loadAlltime(),
+      loadPlayers(),
+      loadSeasons(),
+    ]);
+    renderCurrentView();
+    toast("Daten aktualisiert", "success");
+  } catch(e) {
+    toast("Sync fehlgeschlagen: " + e.message, "error");
+  } finally {
+    btn.classList.remove("syncing");
+    btn.textContent = "↻ Sync";
+  }
+}
+
+async function loadSummary() {
+  S.summary = await api("v_season_summary?order=year.desc,season_rank");
+}
+async function loadHistory() {
+  S.history = await api("v_rank_history?order=year,player");
+}
+async function loadAlltime() {
+  S.alltime = await api("v_alltime_ranking?order=alltime_avg");
+}
+async function loadPlayers() {
+  S.players = await api("players?order=name");
+}
+async function loadSeasons() {
+  S.seasons = await api("seasons?order=year.desc");
+}
+
+// ── View routing ──────────────────────────────────────────────────
+let currentView = "saison";
+
+function showView(name, btn) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("view-" + name).classList.add("active");
+  if (btn) btn.classList.add("active");
+  currentView = name;
+  renderCurrentView();
+}
+
+function renderCurrentView() {
+  if (currentView === "saison")  renderSaison();
+  if (currentView === "verlauf") renderVerlauf();
+  if (currentView === "best")    renderBest();
+  if (currentView === "entry")   renderEntry();
+}
+
+// ── SAISON view ───────────────────────────────────────────────────
+function renderSaison() {
+  // Season tabs
+  const years = [...new Set(S.summary.map(r => r.year))].sort((a,b) => b-a);
+  if (years.length && !years.includes(S.selectedYear)) S.selectedYear = years[0];
+
+  const tabsEl = document.getElementById("saison-seasons");
+  tabsEl.innerHTML = years.map(y =>
+    `<button class="season-tab ${y === S.selectedYear ? 'active' : ''}"
+      onclick="selectYear(${y})">${y}${y===S.currentYear?'*':''}</button>`
+  ).join("");
+
+  // Header sub
+  const latestSeason = S.seasons.find(s => s.year === S.selectedYear);
+  document.getElementById("header-sub").textContent =
+    latestSeason ? latestSeason.label : `Saison ${S.selectedYear}`;
+
+  // Rankings for selected year
+  const rows = S.summary.filter(r => r.year === S.selectedYear)
+                         .sort((a,b) => a.season_rank - b.season_rank);
+
+  const content = document.getElementById("saison-content");
+  if (!rows.length) {
+    content.innerHTML = `<div class="loading-wrap">Keine Daten für ${S.selectedYear}</div>`;
+    return;
+  }
+
+  const maxAvg = Math.max(...rows.map(r => parseFloat(r.avg_points_per_game)));
+  const minAvg = Math.min(...rows.map(r => parseFloat(r.avg_points_per_game)));
+
+  content.innerHTML = `
+    <div class="card">
+      <div class="card-title">Rangliste ${S.selectedYear}${S.selectedYear===S.currentYear?' ⚡':''}</div>
+      ${rows.map(r => {
+        const avg = parseFloat(r.avg_points_per_game);
+        const barW = maxAvg > minAvg
+          ? Math.round((1 - (avg - minAvg) / (maxAvg - minAvg)) * 100)
+          : 80;
+        const color = PLAYER_COLORS[r.player] || "#888";
+        const medal = r.season_rank===1?"🥇":r.season_rank===2?"🥈":r.season_rank===3?"🥉":null;
+        return `
+          <div class="rank-row">
+            ${medal
+              ? `<div class="rank-medal">${medal}</div>`
+              : `<div class="rank-num">${r.season_rank}</div>`}
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span class="rank-name" style="color:${color}">${r.player}</span>
+                <span class="rank-avg">${avg.toFixed(4)}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div class="rank-bar-wrap">
+                  <div class="rank-bar" style="width:${barW}%;background:${color}"></div>
+                </div>
+                <span class="rank-games" style="margin-left:8px">${r.total_games} Sp.</span>
+              </div>
+            </div>
+          </div>`;
+      }).join("")}
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="font-size:11px;color:var(--muted);margin-bottom:8px">
+        STAT SAISON ${S.selectedYear}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${[
+          ["Runden", [...new Set(rows.map(r=>r.rounds_played))].reduce((a,b)=>Math.max(a,b),0)+""],
+          ["Spieler", rows.length+""],
+          ["Spiele gesamt", rows.reduce((s,r)=>s+(parseInt(r.total_games)||0),0)+""],
+          ["Bester Schnitt", rows[0] ? parseFloat(rows[0].avg_points_per_game).toFixed(4) : "—"],
+        ].map(([k,v]) => `
+          <div style="background:var(--bg3);border-radius:6px;padding:10px">
+            <div style="font-size:9px;color:var(--muted);margin-bottom:4px">${k}</div>
+            <div style="font-size:16px;font-weight:700;color:#fff">${v}</div>
+          </div>`).join("")}
+      </div>
+    </div>`;
+}
+
+function selectYear(y) {
+  S.selectedYear = y;
+  renderSaison();
+}
+
+// ── VERLAUF view (Chart) ──────────────────────────────────────────
+const YEARS_ALL = [2002,2005,2006,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2022,2023,2024,2025];
+
+function renderVerlauf() {
+  // Build vis set from history data
+  if (S.chartVis.size === 0) {
+    const active = S.players.filter(p => p.active).map(p => p.name);
+    active.forEach(n => S.chartVis.add(n));
+  }
+
+  // Build chart data from history
+  const players = [...new Set(S.history.map(r => r.player))];
+  const years   = [...new Set(S.history.map(r => r.year))].sort((a,b)=>a-b);
+
+  // Legend
+  const leg = document.getElementById("chart-legend");
+  leg.innerHTML = players.map(p => {
+    const on = S.chartVis.has(p);
+    const c  = PLAYER_COLORS[p] || "#888";
+    return `<div class="leg-chip ${on?'':'off'}"
+      style="color:${c};border-color:${on?c:'#2d3748'};background:${on?c+'18':'transparent'}"
+      onclick="toggleChartPlayer('${p}')">${p}</div>`;
+  }).join("");
+
+  drawChart(years, players);
+}
+
+function toggleChartPlayer(p) {
+  S.chartVis.has(p) ? S.chartVis.delete(p) : S.chartVis.add(p);
+  renderVerlauf();
+}
+
+function drawChart(years, players) {
+  const canvas = document.getElementById("chart");
+  const w = canvas.parentElement.clientWidth - 12;
+  const h = 300;
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0,0,w,h);
+
+  const PAD = {t:8, r:40, b:26, l:40};
+  const YMIN=1.0, YMAX=3.2;
+  const xp = i  => PAD.l + (i/(years.length-1||1))*(w-PAD.l-PAD.r);
+  const yp = v  => PAD.t + (YMAX-Math.max(YMIN,Math.min(YMAX,v)))/(YMAX-YMIN)*(h-PAD.t-PAD.b);
+
+  // Grid
+  [1.0,1.5,2.0,2.5,3.0].forEach(v => {
+    const y = yp(v);
+    ctx.beginPath(); ctx.moveTo(PAD.l,y); ctx.lineTo(w-PAD.r,y);
+    ctx.strokeStyle = v===2?"#2d3748":"#1a2234";
+    ctx.setLineDash(v===2?[4,4]:[]); ctx.lineWidth=1; ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle="#4a5568"; ctx.font="9px 'Courier New'";
+    ctx.textAlign="right"; ctx.fillText(v.toFixed(1), PAD.l-4, y+4);
+  });
+
+  // X labels
+  ctx.fillStyle="#4a5568"; ctx.font="9px 'Courier New'"; ctx.textAlign="center";
+  years.forEach((yr,i) => ctx.fillText(String(yr).slice(2)+(yr===2025?"*":""), xp(i), h-PAD.b+14));
+
+  // Lines
+  const dataMap = {};
+  S.history.forEach(r => {
+    if (!dataMap[r.player]) dataMap[r.player] = {};
+    dataMap[r.player][r.year] = parseFloat(r.avg_points_per_game);
+  });
+
+  players.forEach(p => {
+    if (!S.chartVis.has(p)) return;
+    const c = PLAYER_COLORS[p] || "#888";
+    ctx.strokeStyle=c; ctx.lineWidth=2; ctx.lineJoin="round";
+    ctx.beginPath(); let first=true;
+    years.forEach((yr,i) => {
+      const v = dataMap[p]?.[yr];
+      if (v===undefined || v>3.2) return;
+      first ? (ctx.moveTo(xp(i),yp(v)), first=false) : ctx.lineTo(xp(i),yp(v));
+    });
+    ctx.stroke();
+    years.forEach((yr,i) => {
+      const v = dataMap[p]?.[yr];
+      if (v===undefined || v>3.2) return;
+      ctx.beginPath(); ctx.arc(xp(i),yp(v),3,0,Math.PI*2);
+      ctx.fillStyle=c; ctx.fill();
+    });
+  });
+}
+
+window.addEventListener("resize", () => {
+  if (currentView === "verlauf") {
+    const years  = [...new Set(S.history.map(r => r.year))].sort((a,b)=>a-b);
+    const players = [...new Set(S.history.map(r => r.player))];
+    drawChart(years, players);
+  }
+});
+
+// ── BESTENLISTE view ──────────────────────────────────────────────
+function renderBest() {
+  const el = document.getElementById("best-content");
+  if (!S.alltime.length) {
+    el.innerHTML = `<div class="loading-wrap"><div class="spinner"></div>Lade…</div>`;
+    return;
+  }
+
+  const filtered = S.alltime.filter(r => r.seasons_played >= 3);
+
+  // Jahressieger aus summary
+  const winners = {};
+  const yearGroups = {};
+  S.summary.forEach(r => {
+    if (!yearGroups[r.year]) yearGroups[r.year] = [];
+    yearGroups[r.year].push(r);
+  });
+  Object.entries(yearGroups).forEach(([yr, rows]) => {
+    const winner = rows.reduce((best, r) =>
+      parseFloat(r.avg_points_per_game) < parseFloat(best.avg_points_per_game) ? r : best
+    );
+    winners[yr] = winner.player;
+  });
+
+  const winCounts = {};
+  Object.values(winners).forEach(p => winCounts[p] = (winCounts[p]||0)+1);
+
+  el.innerHTML = `
+    <div class="card">
+      <div class="card-title">Gesamtrangliste</div>
+      <div class="card-sub">Ø Punkte/Spiel über alle Saisonen</div>
+      ${filtered.map((r,i) => {
+        const avg = parseFloat(r.alltime_avg);
+        const c   = PLAYER_COLORS[r.player] || "#888";
+        const w   = winCounts[r.player] || 0;
+        const bw  = Math.max(0,(1-(avg-1.4)/(3.0-1.4))*100);
+        return `
+          <div class="rank-row">
+            <div class="rank-num">#${i+1}</div>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span class="rank-name" style="color:${c}">
+                  ${r.player}${!r.active?' †':''}
+                  ${w?` ${'🏆'.repeat(Math.min(w,4))}':''}
+                </span>
+                <span class="rank-avg">${avg.toFixed(4)}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div class="rank-bar-wrap">
+                  <div class="rank-bar" style="width:${bw}%;background:${c}"></div>
+                </div>
+                <span class="rank-games" style="margin-left:8px">${r.seasons_played} Sais.</span>
+              </div>
+            </div>
+          </div>`;
+      }).join("")}
+    </div>
+
+    <div class="card">
+      <div class="card-title">Jahressieger</div>
+      ${Object.entries(winners).sort((a,b)=>b[0]-a[0]).map(([yr,p]) => {
+        const c = PLAYER_COLORS[p] || "#888";
+        const row = S.summary.find(r => r.year==yr && r.player===p);
+        const avg = row ? parseFloat(row.avg_points_per_game).toFixed(4) : "";
+        return `
+          <div class="timeline-row">
+            <span style="color:var(--muted);font-size:10px;min-width:44px">${yr}${yr==S.currentYear?'*':''}</span>
+            <span style="color:${c};font-weight:600;font-size:12px;flex:1">${p}</span>
+            <span style="color:var(--muted);font-size:10px">${avg}</span>
+          </div>`;
+      }).join("")}
+    </div>`;
+}
+
+// ── ENTRY view ────────────────────────────────────────────────────
+function renderEntry() {
+  const el = document.getElementById("entry-content");
+
+  if (!S.pinUnlocked) {
+    el.innerHTML = `
+      <div style="padding:20px 0">
+        <div class="card">
+          <div class="card-title">🔒 Eintragen</div>
+          <p style="color:var(--muted);font-size:11px;margin-bottom:16px">
+            PIN eingeben um neue Ergebnisse einzutragen.
+          </p>
+          <div class="form-group">
+            <label class="form-label">PIN</label>
+            <input type="password" inputmode="numeric" class="pin-input"
+              id="pin-field" maxlength="6" placeholder="••••"
+              onkeyup="checkPin(event)">
+          </div>
+          <div class="pin-error" id="pin-err"></div>
+          <button class="btn btn-primary" onclick="checkPin({key:'Enter'})">Entsperren</button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  // Active players
+  const activePlayers = S.players.filter(p => p.active);
+
+  // Next round number guess
+  const currentSeasonSummary = S.summary.filter(r => r.year === S.currentYear);
+  const maxRounds = currentSeasonSummary.length > 0
+    ? Math.max(...currentSeasonSummary.map(r => parseInt(r.rounds_played) || 0))
+    : 0;
+
+  el.innerHTML = `
+    <div class="card">
+      <div class="card-title">Neue Runde eintragen</div>
+
+      <div class="form-group">
+        <label class="form-label">Saison</label>
+        <select class="form-select" id="entry-season">
+          ${S.seasons.map(s =>
+            `<option value="${s.id}" ${s.year===S.currentYear?'selected':''}>${s.year} – ${s.label||s.year}</option>`
+          ).join("")}
+        </select>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group">
+          <label class="form-label">Runden-Nr.</label>
+          <input type="number" class="form-input" id="entry-roundnr"
+            value="${maxRounds+1}" min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Datum</label>
+          <input type="date" class="form-input" id="entry-date"
+            value="${new Date().toISOString().slice(0,10)}">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Ergebnisse</div>
+      <div class="card-sub">Spieler ein-/ausschalten, dann Punkte und Spiele eintragen</div>
+      <div id="player-entries">
+        ${activePlayers.map(p => `
+          <div class="player-entry" id="pentry-${p.id}">
+            <div class="player-entry-header">
+              <div class="player-dot" style="background:${PLAYER_COLORS[p.name]||'#888'}"></div>
+              <span class="player-entry-name">${p.name}</span>
+              <button class="player-toggle" id="ptog-${p.id}"
+                onclick="togglePlayerEntry(${p.id})">Dabei</button>
+            </div>
+            <div class="player-fields hidden" id="pfields-${p.id}">
+              <div>
+                <div class="field-label">PUNKTE</div>
+                <input type="number" class="field-input" id="pts-${p.id}"
+                  min="0" placeholder="0">
+              </div>
+              <div>
+                <div class="field-label">SPIELE</div>
+                <input type="number" class="field-input" id="gms-${p.id}"
+                  min="1" placeholder="0">
+              </div>
+            </div>
+          </div>`).join("")}
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="submitRound()" style="margin-bottom:16px">
+      Runde speichern
+    </button>
+    <button class="btn btn-secondary" onclick="S.pinUnlocked=false;renderEntry()"
+      style="margin-bottom:20px">
+      🔒 Sperren
+    </button>`;
+}
+
+function checkPin(e) {
+  if (e.key !== "Enter") return;
+  const val = document.getElementById("pin-field")?.value || "";
+  if (val === PIN) {
+    S.pinUnlocked = true;
+    renderEntry();
+  } else {
+    document.getElementById("pin-err").textContent = "Falscher PIN";
+  }
+}
+
+function togglePlayerEntry(id) {
+  const tog    = document.getElementById("ptog-" + id);
+  const fields = document.getElementById("pfields-" + id);
+  const on = !tog.classList.contains("on");
+  tog.classList.toggle("on", on);
+  tog.textContent = on ? "Dabei ✓" : "Dabei";
+  fields.classList.toggle("hidden", !on);
+}
+
+async function submitRound() {
+  const seasonId  = document.getElementById("entry-season").value;
+  const roundNr   = parseInt(document.getElementById("entry-roundnr").value);
+  const dateVal   = document.getElementById("entry-date").value;
+
+  if (!seasonId || !roundNr) { toast("Saison und Runden-Nr. erforderlich", "error"); return; }
+
+  // Collect scores
+  const scores = [];
+  S.players.filter(p=>p.active).forEach(p => {
+    const tog = document.getElementById("ptog-"+p.id);
+    if (!tog?.classList.contains("on")) return;
+    const pts = parseInt(document.getElementById("pts-"+p.id)?.value||"");
+    const gms = parseInt(document.getElementById("gms-"+p.id)?.value||"");
+    if (isNaN(pts)||isNaN(gms)||gms<1) {
+      return;
+    }
+    scores.push({player_id: p.id, points: pts, games_played: gms});
+  });
+
+  if (scores.length === 0) { toast("Mindestens 1 Spieler mit gültigen Werten", "error"); return; }
+
+  try {
+    // 1. Create round
+    const [round] = await api("rounds", {
+      method: "POST",
+      body: JSON.stringify({
+        season_id: parseInt(seasonId),
+        round_number: roundNr,
+        played_on: dateVal || null,
+      }),
+    });
+
+    // 2. Insert scores
+    const scoreRows = scores.map(s => ({...s, round_id: round.id}));
+    await api("round_scores", {
+      method: "POST",
+      body: JSON.stringify(scoreRows),
+    });
+
+    toast(`Runde ${roundNr} gespeichert (${scores.length} Spieler)`, "success");
+    await syncAll();
+    renderEntry();
+  } catch(e) {
+    toast("Fehler: " + e.message, "error");
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────
+function toast(msg, type="") {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = "show " + type;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.className = "", 3000);
+}
+
+// ── Offline detection ─────────────────────────────────────────────
+window.addEventListener("online",  () => document.body.classList.remove("offline"));
+window.addEventListener("offline", () => document.body.classList.add("offline"));
+if (!navigator.onLine) document.body.classList.add("offline");
+
+// ── Service Worker ────────────────────────────────────────────────
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").catch(console.error);
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+(async function init() {
+  if (!BASE || BASE.includes("DEINE-PROJECT-ID")) {
+    document.getElementById("saison-content").innerHTML = `
+      <div class="card" style="border-color:var(--accent)">
+        <div class="card-title" style="color:var(--accent)">⚙ Konfiguration fehlt</div>
+        <p style="color:var(--muted);font-size:11px;line-height:1.7">
+          Bitte <b style="color:var(--text)">config.js</b> mit deinen Supabase-Zugangsdaten befüllen
+          und die App erneut laden.<br><br>
+          Siehe <b style="color:var(--text)">DEPLOY.md</b> für die Anleitung.
+        </p>
+      </div>`;
+    return;
+  }
+  await syncAll();
+})();
+</script>
+</body>
+</html>
