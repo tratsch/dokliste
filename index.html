@@ -463,7 +463,9 @@
         var winners = {};
         Object.entries(byYear).forEach(function(kv) {
             var yr = kv[0], rows = kv[1];
-            var w = rows.reduce(function(b,r){ return +r.avg_points_per_game < +b.avg_points_per_game ? r : b; });
+            var candidates = rows.filter(function(r){ return qualifiesForYear(r.player, +yr); });
+            if (!candidates.length) candidates = rows;
+            var w = candidates.reduce(function(b,r){ return +r.avg_points_per_game < +b.avg_points_per_game ? r : b; });
             winners[yr] = w.player;
         });
         var wc = {};
