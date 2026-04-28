@@ -232,6 +232,9 @@
             ]);
             S.summary = res[0]; S.history = res[1]; S.alltime = res[2];
             S.players = res[3]; S.seasons = res[4];
+            if (!S.chartVis.size) {
+                [...new Set(S.history.map(function(r){ return r.player; }))].forEach(function(p){ S.chartVis.add(p); });
+            }
             if (S.seasons.length && S.selYear === null) {
                 var newest = +S.seasons[0].year;
                 S.selYear = newest; S.selYearR = newest;
@@ -386,9 +389,6 @@
 
     // ── VERLAUF ───────────────────────────────────────────────────
     function renderVerlauf() {
-        if (!S.chartVis.size) {
-            [...new Set(S.history.map(function(r){ return r.player; }))].forEach(function(p){ S.chartVis.add(p); });
-        }
         var players = [...new Set(S.history.map(function(r){ return r.player; }))];
         var years   = [...new Set(S.history.map(function(r){ return +r.year; }))].sort(function(a,b){ return a-b; });
 
