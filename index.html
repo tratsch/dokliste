@@ -567,7 +567,7 @@ function renderEntryForm(){
         </div>
         <div>
           <label class="fl">Datum</label>
-          <input type="date" id="rdate" class="fi" value="\${new Date().toISOString().slice(0,10)}">
+          <input type="date" id="rdate" class="fi" value="${new Date().toISOString().slice(0,10)}">
         </div>
       </div>
     </div>
@@ -612,7 +612,7 @@ function renderEntryForm(){
       <button class="btn btn-s" onclick="createSeason()">+ Saison anlegen</button>
     </div>
 
-    <button class="btn btn-s" onclick="S.pinOk=false;renderEntry()" style="margin-top:4px">🔒 Sperren</button>\`;
+    <button class="btn btn-s" onclick="S.pinOk=false;renderEntry()" style="margin-top:4px">🔒 Sperren</button>`;
 }
 
 function togPlayer(id){
