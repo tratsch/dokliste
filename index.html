@@ -152,7 +152,7 @@
       <div class="cwrap"><canvas id="chart" height="300"></canvas></div>
       <div class="cleg" id="cleg"></div>
       <p style="font-size:9px;color:var(--muted);margin-top:6px;padding:0 4px">
-        Y-Achse: &#216; Punkte/Spiel (niedriger = besser) &middot; * laufende Saison
+        Y-Achse: &#216; Punkte/Spiel (niedriger = besser)
       </p>
     </div>
     <div id="v-best" class="view">
@@ -197,7 +197,7 @@
 
     const S = {
         summary:[], history:[], alltime:[], players:[], seasons:[],
-        selYear:CUR, selYearR:CUR,
+        selYear:null, selYearR:null,
         chartVis:new Set(),
         pinOk:false
     };
@@ -232,6 +232,10 @@
             ]);
             S.summary = res[0]; S.history = res[1]; S.alltime = res[2];
             S.players = res[3]; S.seasons = res[4];
+            if (S.seasons.length && S.selYear === null) {
+                var newest = +S.seasons[0].year;
+                S.selYear = newest; S.selYearR = newest;
+            }
             render(); toast("Aktualisiert", "ok");
         } catch(e) { toast(e.message, "err"); }
         finally { b.classList.remove("syncing"); b.textContent = "\u21bb Sync"; }
@@ -257,11 +261,11 @@
     // ── SAISON ────────────────────────────────────────────────────
     function renderSaison() {
         var years = [...new Set(S.summary.map(function(r){ return +r.year; }))].sort(function(a,b){ return b-a; });
-        if (years.length && !years.includes(+S.selYear)) S.selYear = years[0];
+        if (years.length && (!S.selYear || !years.includes(+S.selYear))) S.selYear = years[0];
 
         document.getElementById("stabs").innerHTML = years.map(function(y) {
             var on = +y === +S.selYear ? " on" : "";
-            var cur = +y === CUR ? "*" : "";
+            var cur = "";
             return '<button class="stab' + on + '" onclick="selY(' + y + ',\'saison\')">' + y + cur + '</button>';
         }).join("");
 
@@ -307,11 +311,11 @@
     // ── RUNDEN ────────────────────────────────────────────────────
     async function renderRunden() {
         var years = S.seasons.map(function(s){ return +s.year; }).sort(function(a,b){ return b-a; });
-        if (years.length && !years.includes(+S.selYearR)) S.selYearR = years[0];
+        if (years.length && (!S.selYearR || !years.includes(+S.selYearR))) S.selYearR = years[0];
 
         document.getElementById("stabs2").innerHTML = years.map(function(y) {
             var on = +y === +S.selYearR ? " on" : "";
-            var cur = +y === CUR ? "*" : "";
+            var cur = "";
             return '<button class="stab' + on + '" onclick="selY(' + y + ',\'runden\')">' + y + cur + '</button>';
         }).join("");
 
@@ -405,7 +409,7 @@
         });
         ctx.fillStyle = "#7a8fa6"; ctx.font = "9px 'Courier New'"; ctx.textAlign = "center";
         years.forEach(function(yr, i) {
-            ctx.fillText(String(yr).slice(2) + (+yr === CUR ? "*" : ""), xp(i), h - P.b + 14);
+            ctx.fillText(String(yr).slice(2), xp(i), h - P.b + 14);
         });
         var dm = {};
         S.history.forEach(function(r){ (dm[r.player] = dm[r.player] || {})[+r.year] = +r.avg_points_per_game; });
@@ -469,16 +473,88 @@
                     '</div>' +
                     '</div></div>';
             }).join("") + '</div>' +
+            (function() {
+                var pm = {};
+                S.summary.forEach(function(r){
+                    if (!pm[r.player]) pm[r.player] = { ranks:[], seasons:0, active: true };
+                    pm[r.player].ranks.push(+r.season_rank);
+                    pm[r.player].seasons++;
+                });
+                var at = S.alltime.reduce(function(m,r){ m[r.player] = r; return m; }, {});
+                var stats = Object.keys(pm).filter(function(n){ return pm[n].seasons >= 3; }).map(function(name) {
+                    var ranks = pm[name].ranks;
+                    var sum = ranks.reduce(function(a,b){ return a+b; }, 0);
+                    var avg = sum / ranks.length;
+                    var active = at[name] ? at[name].active : true;
+                    return { name:name, avg:avg, seasons:pm[name].seasons, active:active };
+                }).sort(function(a,b){ return a.avg - b.avg; });
+                var hi = stats.length ? stats[stats.length-1].avg : 1;
+                var lo = stats.length ? stats[0].avg : 1;
+                return '<div class="card"><div class="ct">Gesamtrangliste</div>' +
+                    '<div class="cs">Ø Platzierung über alle Saisonen (mind. 3)</div>' +
+                    stats.map(function(r, i) {
+                        var c = COL[r.name] || "#888";
+                        var bw = hi > lo ? Math.round((1 - (r.avg - lo) / (hi - lo)) * 100) : 80;
+                        return '<div class="rrow"><div class="rnum">#' + (i+1) + '</div>' +
+                            '<div style="flex:1;min-width:0">' +
+                            '<div style="display:flex;justify-content:space-between">' +
+                            '<span class="rname" style="color:' + c + '">' + r.name + (!r.active ? " †" : "") + '</span>' +
+                            '<span class="ravg" style="color:' + c + '">' + r.avg.toFixed(2) + '</span>' +
+                            '</div>' +
+                            '<div style="display:flex;align-items:center;gap:6px">' +
+                            '<div class="rbar" style="flex:1"><div class="rbfill" style="width:' + bw + '%;background:' + c + '"></div></div>' +
+                            '<span class="rgms">' + r.seasons + ' Sais.</span>' +
+                            '</div>' +
+                            '</div></div>';
+                    }).join("") + '</div>';
+            })() +
             '<div class="card"><div class="ct">Jahressieger</div>' +
             Object.entries(winners).sort(function(a,b){ return b[0]-a[0]; }).map(function(kv) {
                 var yr = kv[0], p = kv[1], c = COL[p] || "#888";
                 var row = S.summary.find(function(r){ return +r.year === +yr && r.player === p; });
                 return '<div class="row">' +
-                    '<span style="color:var(--muted);font-size:10px;min-width:44px">' + yr + (+yr === CUR ? "*" : "") + '</span>' +
+                    '<span style="color:var(--muted);font-size:10px;min-width:44px">' + yr + '</span>' +
                     '<span style="color:' + c + ';font-weight:600;font-size:12px;flex:1">' + p + '</span>' +
                     '<span style="color:var(--muted);font-size:10px">' + (row ? (+row.avg_points_per_game).toFixed(4) : "") + '</span>' +
                     '</div>';
-            }).join("") + '</div>';
+            }).join("") + '</div>' +
+            (function() {
+                var allYears = [...new Set(S.summary.map(function(r){ return +r.year; }))].sort(function(a,b){ return a-b; });
+                var pm = {};
+                S.summary.forEach(function(r){
+                    if (!pm[r.player]) pm[r.player] = {};
+                    pm[r.player][+r.year] = +r.season_rank;
+                });
+                var stats = Object.keys(pm).map(function(name) {
+                    var ranks = Object.values(pm[name]);
+                    var sum = ranks.reduce(function(a,b){ return a+b; }, 0);
+                    return { name:name, ranks:pm[name], sum:sum, avg:sum/ranks.length };
+                }).sort(function(a,b){ return a.avg - b.avg; });
+                var rankBg = ["","#ffd70028","#c0c0c028","#cd7f3228"];
+                var thead = '<tr style="border-bottom:2px solid var(--border)">' +
+                    '<th style="text-align:left;padding:5px 8px 5px 0;white-space:nowrap">Spieler</th>' +
+                    allYears.map(function(y){ return '<th style="padding:5px 4px;min-width:28px">' + y + '</th>'; }).join("") +
+                    '<th style="padding:5px 4px;min-width:28px">&#931;</th>' +
+                    '<th style="padding:5px 4px;min-width:36px">&#216;</th></tr>';
+                var tbody = stats.map(function(ps) {
+                    var c = COL[ps.name] || "#888";
+                    return '<tr style="border-bottom:1px solid var(--border)">' +
+                        '<td style="padding:5px 10px 5px 0;color:' + c + ';font-weight:600;white-space:nowrap">' + ps.name + '</td>' +
+                        allYears.map(function(y) {
+                            var r = ps.ranks[y];
+                            if (!r) return '<td style="padding:5px 4px;text-align:center;color:var(--muted)">–</td>';
+                            var bg = rankBg[r] || "";
+                            return '<td style="padding:5px 4px;text-align:center;' + (bg ? 'background:' + bg + ';' : '') + '">' + r + '</td>';
+                        }).join("") +
+                        '<td style="padding:5px 4px;text-align:center;color:var(--muted)">' + ps.sum + '</td>' +
+                        '<td style="padding:5px 4px;text-align:center;font-weight:600">' + ps.avg.toFixed(2) + '</td>' +
+                        '</tr>';
+                }).join("");
+                return '<div class="card" style="padding:14px 14px 8px;overflow-x:auto">' +
+                    '<div class="ct" style="margin-bottom:8px">Platzierungen</div>' +
+                    '<table style="width:100%;border-collapse:collapse;font-size:10px">' +
+                    '<thead>' + thead + '</thead><tbody>' + tbody + '</tbody></table></div>';
+            })();
     }
 
     // ── EINTRAGEN ─────────────────────────────────────────────────
@@ -630,6 +706,9 @@
         });
 
         if (!scores.length) { toast("Mindestens 1 Spieler mit Werten", "err"); return; }
+
+        var totalGames = scores.reduce(function(sum, s){ return sum + s.games_played; }, 0);
+        if (totalGames % 4 !== 0) { toast("Spiele-Summe (" + totalGames + ") nicht durch 4 teilbar", "err"); return; }
 
         try {
             var res = await api("rounds", {method:"POST",
