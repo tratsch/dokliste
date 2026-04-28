@@ -339,7 +339,8 @@ function selY(y,which){
 
 // ── RUNDEN ─────────────────────────────────────────────────────
 async function renderRunden(){
-  const years=[...new Set(S.summary.map(r=>r.year))].sort((a,b)=>b-a);
+  // Use S.seasons (all seasons, including empty ones) for tab list
+  const years=S.seasons.map(s=>s.year).sort((a,b)=>b-a);
   if(years.length&&!years.includes(S.selYearR))S.selYearR=years[0];
 
   document.getElementById("stabs2").innerHTML=years.map(y=>
@@ -348,7 +349,7 @@ async function renderRunden(){
 
   const el=document.getElementById("rbody");
   const season=S.seasons.find(s=>s.year===S.selYearR);
-  if(!season){el.innerHTML=`<div class="ld">Keine Saison</div>`;return;}
+  if(!season){el.innerHTML=`<div class="ld">Keine Saison gefunden</div>`;return;}
 
   el.innerHTML=`<div class="ld"><div class="sp"></div>Lade…</div>`;
   let rounds=[];
@@ -401,7 +402,7 @@ async function renderRunden(){
 
 // ── VERLAUF ────────────────────────────────────────────────────
 function renderVerlauf(){
-  if(!S.chartVis.size)S.players.filter(p=>p.active).forEach(p=>S.chartVis.add(p.name));
+  if(!S.chartVis.size){const all=[...new Set(S.history.map(r=>r.player))];all.forEach(p=>S.chartVis.add(p));}
   const players=[...new Set(S.history.map(r=>r.player))];
   const years=[...new Set(S.history.map(r=>r.year))].sort((a,b)=>a-b);
   document.getElementById("cleg").innerHTML=players.map(p=>{
@@ -548,7 +549,7 @@ function renderEntryForm(){
     return;
   }
   const activePlayers=S.players.filter(p=>p.active);
-  const defSeason=S.seasons.find(s=>s.year===CUR)||S.seasons[0];
+  const defSeason=S.seasons.find(s=>s.year===S.selYearR)||S.seasons.find(s=>s.year===CUR)||S.seasons[0];
   const defNr=estNextRound(defSeason.id);
 
   document.getElementById("ebody").innerHTML=`
