@@ -1,6 +1,6 @@
 {
   "name": "Doppelkopf Liste",
-  "short_name": "Doko",
+  "short_name": "Doko-Liste",
   "description": "Punktestand und Rangliste der Doppelkopf-Runde",
   "start_url": "/dokliste/",
   "scope": "/dokliste/",
