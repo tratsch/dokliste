@@ -392,11 +392,9 @@
         var players = [...new Set(S.history.map(function(r){ return r.player; }))];
         var years   = [...new Set(S.history.map(function(r){ return +r.year; }))].sort(function(a,b){ return a-b; });
 
-        var allOn = players.every(function(p){ return S.chartVis.has(p); });
-        var allOff = players.every(function(p){ return !S.chartVis.has(p); });
         document.getElementById("cleg").innerHTML =
-            '<button class="stab' + (allOn ? ' on' : '') + '" onclick="togAll(true)" style="font-size:9px;padding:3px 8px">Alle an</button>' +
-            '<button class="stab' + (allOff ? ' on' : '') + '" onclick="togAll(false)" style="font-size:9px;padding:3px 8px">Alle aus</button>' +
+            '<button class="stab" onclick="togAll(true)" style="font-size:9px;padding:3px 8px">Alle an</button>' +
+            '<button class="stab" onclick="togAll(false)" style="font-size:9px;padding:3px 8px">Alle aus</button>' +
             players.map(function(p) {
                 var on = S.chartVis.has(p), c = COL[p] || "#888";
                 return '<div class="chip' + (on ? "" : " off") + '"' +
