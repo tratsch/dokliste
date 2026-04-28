@@ -198,7 +198,8 @@
         summary:[], history:[], alltime:[], players:[], seasons:[],
         selYear:null, selYearR:null,
         chartVis:new Set(),
-        pinOk:false
+        pinOk:false,
+        filterActive:false
     };
 
     // ── API ───────────────────────────────────────────────────────
@@ -264,12 +265,15 @@
 
         document.getElementById("stabs").innerHTML = years.map(function(y) {
             var on = +y === +S.selYear ? " on" : "";
-            var cur = "";
-            return '<button class="stab' + on + '" onclick="selY(' + y + ',\'saison\')">' + y + cur + '</button>';
-        }).join("");
-
+            return '<button class="stab' + on + '" onclick="selY(' + y + ',\'saison\')">' + y + '</button>';
+        }).join("") +
+        '<button class="tog' + (S.filterActive ? ' on' : '') + '" onclick="toggleFilter()" ' +
+        'style="margin-left:auto;font-size:10px;padding:4px 10px" ' +
+        'title="Nur Spieler mit mind. 10% der Runden">' +
+        '&#8805;10% Runden</button>';
 
         var rows = S.summary.filter(function(r){ return +r.year === +S.selYear; })
+            .filter(function(r){ return qualifiesForYear(r.player, S.selYear); })
             .sort(function(a,b){ return a.season_rank - b.season_rank; });
         var el = document.getElementById("sbody");
         if (!rows.length) { el.innerHTML = '<div class="ld">Keine Daten</div>'; return; }
@@ -279,13 +283,14 @@
 
         el.innerHTML = '<div class="card"><div class="ct">Rangliste ' + S.selYear +
             (+S.selYear === CUR ? " \u26a1" : "") + '</div>' +
-            rows.map(function(r) {
+            rows.map(function(r, i) {
                 var a = +r.avg_points_per_game, c = COL[r.player] || "#888";
                 var bw = hi > lo ? Math.round((1-(a-lo)/(hi-lo))*100) : 80;
+                var rank = i + 1;
                 var medals = {1:"&#127945;", 2:"&#127946;", 3:"&#127947;"};
-                var left = medals[r.season_rank]
-                    ? '<div style="font-size:16px;min-width:22px;text-align:center">' + medals[r.season_rank] + '</div>'
-                    : '<div class="rnum">' + r.season_rank + '</div>';
+                var left = medals[rank]
+                    ? '<div style="font-size:16px;min-width:22px;text-align:center">' + medals[rank] + '</div>'
+                    : '<div class="rnum">' + rank + '</div>';
                 return '<div class="rrow">' + left +
                     '<div style="flex:1;min-width:0">' +
                     '<div style="display:flex;justify-content:space-between">' +
@@ -304,6 +309,19 @@
         if (which === "saison") { S.selYear = +y; renderSaison(); }
         else { S.selYearR = +y; renderRunden(); }
     }
+
+    function qualifiesForYear(playerName, year) {
+        if (!S.filterActive) return true;
+        var rows = S.summary.filter(function(r){ return +r.year === +year; });
+        if (!rows.length) return true;
+        var maxRounds = Math.max.apply(null, rows.map(function(r){ return +(r.rounds_played) || 0; }));
+        var minRounds = Math.ceil(maxRounds * 0.1);
+        if (minRounds === 0) return true;
+        var pr = rows.find(function(r){ return r.player === playerName; });
+        return pr ? (+(pr.rounds_played) || 0) >= minRounds : false;
+    }
+
+    function toggleFilter() { S.filterActive = !S.filterActive; render(); }
 
     // ── RUNDEN ────────────────────────────────────────────────────
     async function renderRunden() {
@@ -417,13 +435,13 @@
             ctx.beginPath(); var f = true;
             years.forEach(function(yr, i) {
                 var v = dm[p] && dm[p][yr];
-                if (!v || v > 3.2) return;
+                if (!v || v > 3.2 || !qualifiesForYear(p, yr)) return;
                 if (f) { ctx.moveTo(xp(i), yp(v)); f = false; } else { ctx.lineTo(xp(i), yp(v)); }
             });
             ctx.stroke();
             years.forEach(function(yr, i) {
                 var v = dm[p] && dm[p][yr];
-                if (!v || v > 3.2) return;
+                if (!v || v > 3.2 || !qualifiesForYear(p, yr)) return;
                 ctx.beginPath(); ctx.arc(xp(i), yp(v), 3, 0, Math.PI * 2);
                 ctx.fillStyle = c; ctx.fill();
             });
@@ -451,28 +469,47 @@
         var wc = {};
         Object.values(winners).forEach(function(p){ wc[p] = (wc[p] || 0) + 1; });
 
+        var atRows = (function() {
+            if (!S.filterActive) return S.alltime.filter(function(r){ return r.seasons_played >= 3; })
+                .map(function(r){ return {name:r.player, avg:+r.alltime_avg, seasons:r.seasons_played, active:r.active}; });
+            var pm2 = {};
+            S.summary.forEach(function(r) {
+                if (!qualifiesForYear(r.player, +r.year)) return;
+                if (!pm2[r.player]) pm2[r.player] = {totalPts:0, totalGms:0, seasons:0, active:true};
+                pm2[r.player].totalPts += +r.avg_points_per_game * +r.total_games;
+                pm2[r.player].totalGms += +r.total_games;
+                pm2[r.player].seasons++;
+            });
+            var at2 = S.alltime.reduce(function(m,r){ m[r.player] = r; return m; }, {});
+            return Object.keys(pm2).filter(function(n){ return pm2[n].seasons >= 3; }).map(function(n) {
+                return {name:n, avg:pm2[n].totalGms ? pm2[n].totalPts/pm2[n].totalGms : 0,
+                    seasons:pm2[n].seasons, active: at2[n] ? at2[n].active : true};
+            }).sort(function(a,b){ return a.avg - b.avg; });
+        })();
+
         el.innerHTML =
             '<div class="card"><div class="ct">Gesamtrangliste</div>' +
             '<div class="cs">\u00d8 Punkte/Spiel \u00fcber alle Saisonen (mind. 3)</div>' +
-            S.alltime.filter(function(r){ return r.seasons_played >= 3; }).map(function(r, i) {
-                var a = +r.alltime_avg, c = COL[r.player] || "#888", ww = wc[r.player] || 0;
+            atRows.map(function(r, i) {
+                var a = r.avg, c = COL[r.name] || "#888", ww = wc[r.name] || 0;
                 var bw = Math.max(0, (1 - (a - 1.4) / (3.0 - 1.4)) * 100);
                 var trophies = ww ? " " + "\u{1F3C6}".repeat(Math.min(ww, 4)) : "";
                 return '<div class="rrow"><div class="rnum">#' + (i+1) + '</div>' +
                     '<div style="flex:1;min-width:0">' +
                     '<div style="display:flex;justify-content:space-between">' +
-                    '<span class="rname" style="color:' + c + '">' + r.player + (!r.active ? " \u2020" : "") + trophies + '</span>' +
+                    '<span class="rname" style="color:' + c + '">' + r.name + (!r.active ? " \u2020" : "") + trophies + '</span>' +
                     '<span class="ravg" style="color:' + c + '">' + a.toFixed(4) + '</span>' +
                     '</div>' +
                     '<div style="display:flex;align-items:center;gap:6px">' +
                     '<div class="rbar" style="flex:1"><div class="rbfill" style="width:' + bw + '%;background:' + c + '"></div></div>' +
-                    '<span class="rgms">' + r.seasons_played + ' Sais.</span>' +
+                    '<span class="rgms">' + r.seasons + ' Sais.</span>' +
                     '</div>' +
                     '</div></div>';
             }).join("") + '</div>' +
             (function() {
                 var pm = {};
                 S.summary.forEach(function(r){
+                    if (!qualifiesForYear(r.player, +r.year)) return;
                     if (!pm[r.player]) pm[r.player] = { ranks:[], seasons:0, active: true };
                     pm[r.player].ranks.push(+r.season_rank);
                     pm[r.player].seasons++;
@@ -520,7 +557,8 @@
                 var pm = {};
                 S.summary.forEach(function(r){
                     if (!pm[r.player]) pm[r.player] = {};
-                    pm[r.player][+r.year] = +r.season_rank;
+                    if (qualifiesForYear(r.player, +r.year))
+                        pm[r.player][+r.year] = +r.season_rank;
                 });
                 var stats = Object.keys(pm).map(function(name) {
                     var ranks = Object.values(pm[name]);
