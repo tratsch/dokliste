@@ -1,5 +1,5 @@
 // Doppelkopf Liste – Service Worker
-const CACHE = "doko-v2";
+const CACHE = "doko-v3";
 const SHELL = ["/dokliste/", "/dokliste/index.html", "/dokliste/manifest.json", "/dokliste/config.js", "/dokliste/icon-192.png", "/dokliste/icon-512.png"];
 
 self.addEventListener("install", e => {
