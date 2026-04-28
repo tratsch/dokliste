@@ -411,7 +411,7 @@
         var P = {t:8, r:36, b:26, l:38};
         var N = 1.0, X = 3.2;
         var xp = function(i){ return P.l + (i / (years.length - 1 || 1)) * (w - P.l - P.r); };
-        var yp = function(v){ return P.t + (X - Math.max(N, Math.min(X, v))) / (X - N) * (h - P.t - P.b); };
+        var yp = function(v){ return P.t + (Math.max(N, Math.min(X, v)) - N) / (X - N) * (h - P.t - P.b); };
         ctx.clearRect(0, 0, w, h);
         [1.0, 1.5, 2.0, 2.5, 3.0].forEach(function(v) {
             var y = yp(v);
