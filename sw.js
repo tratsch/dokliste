@@ -1,4 +1,4 @@
-// Doppelkopf Gladiatoren – Service Worker
+// Doppelkopf Liste – Service Worker
 const CACHE = "doko-v1";
 const SHELL = ["/", "/index.html", "/manifest.json", "/config.js", "/icon-192.png", "/icon-512.png"];
 

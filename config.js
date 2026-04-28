@@ -1,5 +1,5 @@
 // ============================================================
-//  Doppelkopf Gladiatoren – Konfiguration
+//  Doppelkopf Liste – Konfiguration
 //  Diese Datei vor dem Deployment anpassen!
 // ============================================================
 

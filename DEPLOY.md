@@ -48,7 +48,7 @@ window.DOKO_CONFIG = {
   supabaseKey: "eyJ...",                           // Project Settings → API → anon public
   entryPin:    "1234",                             // Dein Wunsch-PIN
   currentSeason: 2025,
-  appTitle: "Doppelkopf Gladiatoren",
+  appTitle: "Doppelkopf Liste",
 };
 ```
 
