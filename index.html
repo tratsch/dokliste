@@ -27,9 +27,12 @@
           font-family:'DM Mono','Courier New',monospace;font-size:13px;
           display:flex;flex-direction:column;}
       #app{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+
+      /* Header */
       #hdr{padding:calc(var(--safe-top)+12px) 16px 12px;background:var(--bg2);
           border-bottom:1px solid var(--border);display:flex;align-items:center;
-          justify-content:space-between;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+          justify-content:space-between;flex-shrink:0;
+          box-shadow:0 1px 4px rgba(0,0,0,.06);}
       #hdr h1{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text);}
       #hdr h1 span{color:var(--accent);}
       .sub{font-size:10px;color:var(--muted);}
@@ -37,26 +40,37 @@
           padding:4px 10px;border-radius:4px;font-family:inherit;font-size:10px;cursor:pointer;}
       #sync-btn.syncing{color:var(--accent);border-color:var(--accent);animation:pulse 1s infinite;}
       @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+      /* Views */
       #views{flex:1;overflow:hidden;position:relative;}
       .view{position:absolute;inset:0;overflow-y:auto;padding:14px;display:none;
           -webkit-overflow-scrolling:touch;}
       .view.active{display:block;}
+
+      /* Nav */
       #nav{display:flex;background:var(--bg2);border-top:1px solid var(--border);
-          padding-bottom:var(--safe-bot);flex-shrink:0;box-shadow:0 -1px 4px rgba(0,0,0,.06);}
+          padding-bottom:var(--safe-bot);flex-shrink:0;
+          box-shadow:0 -1px 4px rgba(0,0,0,.06);}
       .nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
           padding:8px 4px;background:transparent;border:none;cursor:pointer;
           color:var(--muted);font-family:inherit;font-size:9px;transition:color .15s;}
       .nb.on{color:var(--accent);}
       .nb svg{width:20px;height:20px;stroke-width:1.8;}
+
+      /* Cards */
       .card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;
           padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
       .ct{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;
           color:var(--text);margin-bottom:10px;}
       .cs{font-size:10px;color:var(--muted);margin-bottom:12px;margin-top:-6px;}
+
+      /* Season tabs */
       .stabs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px;}
       .stab{background:transparent;border:1px solid var(--border2);color:var(--muted);
           padding:4px 10px;border-radius:4px;font-family:inherit;font-size:10px;cursor:pointer;}
       .stab.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+      /* Rank row */
       .rrow{display:flex;align-items:center;gap:10px;padding:7px 0;
           border-bottom:1px solid var(--border);}
       .rrow:last-child{border-bottom:none;}
@@ -66,15 +80,23 @@
       .rgms{font-size:10px;color:var(--muted);min-width:50px;text-align:right;}
       .rbar{height:3px;background:var(--border);border-radius:2px;margin-top:3px;overflow:hidden;}
       .rbfill{height:100%;border-radius:2px;}
+
+      /* Generic row */
       .row{display:flex;align-items:center;gap:10px;padding:6px 0;
           border-bottom:1px solid var(--border);}
       .row:last-child{border-bottom:none;}
+      .row.click{cursor:pointer;}
+      .row.click:active{background:var(--bg3);margin:0 -14px;padding:6px 14px;border-radius:6px;}
+
+      /* Chart */
       .cwrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;
           padding:12px 6px 6px;margin-bottom:10px;}
       canvas{display:block;max-width:100%;}
       .cleg{display:flex;flex-wrap:wrap;gap:6px;padding:8px 6px 2px;}
       .chip{font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid;cursor:pointer;}
       .chip.off{opacity:.3;}
+
+      /* Buttons */
       .btn{width:100%;padding:11px;border-radius:8px;border:none;
           font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;}
       .btn+.btn{margin-top:8px;}
@@ -82,11 +104,15 @@
       .btn-p:active{opacity:.85;}
       .btn-p:disabled{opacity:.55;cursor:default;}
       .btn-s{background:var(--bg3);color:var(--muted);border:1px solid var(--border2);}
+
+      /* Forms */
       .fl{display:block;font-size:10px;color:var(--muted);margin-bottom:4px;
           text-transform:uppercase;letter-spacing:.5px;}
       .fi,.fsel{width:100%;background:var(--bg3);border:1px solid var(--border2);
           color:var(--text);padding:9px 12px;border-radius:6px;font-family:inherit;font-size:12px;}
       .fi:focus,.fsel:focus{outline:none;border-color:var(--accent);}
+
+      /* Player entry row in round form */
       .per{background:var(--bg3);border:1px solid var(--border);border-radius:8px;
           padding:10px 12px;margin-bottom:8px;}
       .per-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
@@ -102,6 +128,8 @@
           color:var(--text);padding:6px 8px;border-radius:5px;font-family:inherit;
           font-size:14px;text-align:center;}
       .pfi:focus{outline:none;border-color:var(--accent);}
+
+      /* PIN */
       .pin-wrap{display:flex;align-items:center;justify-content:center;padding:40px 0;}
       .pin-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;
           padding:28px 24px;width:280px;box-shadow:0 4px 20px rgba(0,0,0,.08);}
@@ -111,6 +139,8 @@
           font-size:18px;letter-spacing:8px;text-align:center;margin-bottom:10px;}
       .pini:focus{outline:none;border-color:var(--accent);}
       .perr{font-size:11px;color:var(--accent);text-align:center;min-height:14px;margin-bottom:8px;}
+
+      /* Toast */
       #toast{position:fixed;bottom:calc(68px + var(--safe-bot));left:50%;
           transform:translateX(-50%) translateY(20px);background:var(--bg2);
           border:1px solid var(--border2);border-radius:8px;padding:10px 18px;
@@ -119,6 +149,8 @@
       #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
       #toast.err{border-color:var(--accent);color:var(--accent);}
       #toast.ok{border-color:#3d8a4e;color:#2d7a3a;}
+
+      /* Misc */
       .sp{display:inline-block;width:18px;height:18px;border:2px solid var(--border2);
           border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
       @keyframes spin{to{transform:rotate(360deg)}}
@@ -141,15 +173,21 @@
     </div>
     <button id="sync-btn" onclick="doSync()">↻ Sync</button>
   </div>
+
   <div id="views">
+    <!-- SAISON -->
     <div id="v-saison" class="view active">
       <div id="stabs" class="stabs"></div>
       <div id="sbody"><div class="ld"><div class="sp"></div>Lade…</div></div>
     </div>
+
+    <!-- RUNDEN -->
     <div id="v-runden" class="view">
       <div id="stabs2" class="stabs"></div>
       <div id="rbody"><div class="ld"><div class="sp"></div>Lade…</div></div>
     </div>
+
+    <!-- VERLAUF -->
     <div id="v-verlauf" class="view">
       <div class="cwrap"><canvas id="chart" height="300"></canvas></div>
       <div class="cleg" id="cleg"></div>
@@ -157,13 +195,18 @@
         Y-Achse: Ø Punkte/Spiel (niedriger = besser) · * laufende Saison
       </p>
     </div>
+
+    <!-- BESTENLISTE -->
     <div id="v-best" class="view">
       <div id="bbody"><div class="ld"><div class="sp"></div>Lade…</div></div>
     </div>
+
+    <!-- EINTRAGEN -->
     <div id="v-entry" class="view">
       <div id="ebody"></div>
     </div>
   </div>
+
   <nav id="nav">
     <button class="nb on" onclick="goto('saison',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>SAISON
@@ -183,12 +226,13 @@
   </nav>
 </div>
 <div id="toast"></div>
+
 <script>
     const CFG=window.DOKO_CONFIG||{};
     const BASE=CFG.supabaseUrl||"";
     const KEY=CFG.supabaseKey||"";
     const PIN=CFG.entryPin||"1234";
-    const CUR=+(CFG.currentSeason||new Date().getFullYear());
+    const CUR=CFG.currentSeason||new Date().getFullYear();
 
     const COL={Lutz:"#b8960c",Anja:"#c0195c",Rolo:"#7b1fa2",Reinhold:"#2e7d32",
         Jörg:"#d62f3b",Andy:"#1565c0",Pete:"#00838f",Frank:"#5d4037",
@@ -199,8 +243,11 @@
         selYear:CUR,selYearR:CUR,
         chartVis:new Set(),
         pinOk:false,
+        // round detail cache: {seasonId_roundId: [{player,points,games_played}]}
+        roundDetails:{},
     };
 
+    // ── API ────────────────────────────────────────────────────────
     async function api(path,opts={}){
         const r=await fetch(BASE+"/rest/v1/"+path,{
             headers:{apikey:KEY,"Authorization":"Bearer "+KEY,
@@ -222,11 +269,13 @@
                 api("players?order=name"),
                 api("seasons?order=year.desc"),
             ]);
+            S.roundDetails={};  // invalidate cache
             render();toast("Aktualisiert","ok");
         }catch(e){toast(e.message,"err");}
         finally{b.classList.remove("syncing");b.textContent="↻ Sync";}
     }
 
+    // ── Routing ────────────────────────────────────────────────────
     let active="saison";
     function goto(v,btn){
         document.querySelectorAll(".view").forEach(el=>el.classList.remove("active"));
@@ -245,11 +294,11 @@
 
     // ── SAISON ─────────────────────────────────────────────────────
     function renderSaison(){
-        const years=[...new Set(S.summary.map(r=>+r.year))].sort((a,b)=>b-a);
-        if(years.length&&!years.includes(+S.selYear))S.selYear=years[0];
+        const years=[...new Set(S.summary.map(r=>r.year))].sort((a,b)=>b-a);
+        if(years.length&&!years.map(Number).includes(+S.selYear))S.selYear=+years[0];
 
         document.getElementById("stabs").innerHTML=years.map(y=>
-            `<button class="stab${+y===+S.selYear?" on":""}" onclick="selY(${y},'saison')">${y}${+y===CUR?"*":""}</button>`
+            `<button class="stab${+y===+S.selYear?" on":""}" onclick="selY(${y},'saison')">${y}${y===CUR?"*":""}</button>`
         ).join("");
 
         const s=S.seasons.find(x=>+x.year===+S.selYear);
@@ -261,7 +310,7 @@
         const hi=Math.max(...rows.map(r=>+r.avg_points_per_game));
         const lo=Math.min(...rows.map(r=>+r.avg_points_per_game));
         el.innerHTML=`<div class="card">
-    <div class="ct">Rangliste ${S.selYear}${+S.selYear===CUR?" ⚡":""}</div>
+    <div class="ct">Rangliste ${S.selYear}${S.selYear===CUR?" ⚡":""}</div>
     ${rows.map(r=>{
             const a=+r.avg_points_per_game,c=COL[r.player]||"#888";
             const bw=hi>lo?Math.round((1-(a-lo)/(hi-lo))*100):80;
@@ -283,7 +332,6 @@
         }).join("")}
   </div>`;
     }
-
     function selY(y,which){
         if(which==="saison"){S.selYear=+y;renderSaison();}
         else{S.selYearR=+y;renderRunden();}
@@ -291,11 +339,12 @@
 
     // ── RUNDEN ─────────────────────────────────────────────────────
     async function renderRunden(){
+        // Use S.seasons (all seasons, including empty ones) for tab list
         const years=S.seasons.map(s=>+s.year).sort((a,b)=>b-a);
         if(years.length&&!years.includes(+S.selYearR))S.selYearR=years[0];
 
         document.getElementById("stabs2").innerHTML=years.map(y=>
-            `<button class="stab${+y===+S.selYearR?" on":""}" onclick="selY(${y},'runden')">${y}${+y===CUR?"*":""}</button>`
+            `<button class="stab${+y===+S.selYearR?" on":""}" onclick="selY(${y},'runden')">${y}${y===CUR?"*":""}</button>`
         ).join("");
 
         const el=document.getElementById("rbody");
@@ -312,12 +361,16 @@
             return;
         }
 
+        // Load all scores for all rounds in one query
         const ids=rounds.map(r=>r.id).join(",");
         let allScores=[];
         try{allScores=await api(`round_scores?round_id=in.(${ids})`);}catch(e){}
 
+        // Group scores by round
         const byRound={};
-        allScores.forEach(s=>(byRound[s.round_id]=byRound[s.round_id]||[]).push(s));
+        allScores.forEach(s=>{
+            (byRound[s.round_id]=byRound[s.round_id]||[]).push(s);
+        });
 
         el.innerHTML=rounds.map(r=>{
             const scores=byRound[r.id]||[];
@@ -326,6 +379,7 @@
                 return{name:p?.name||"?",points:+s.points,games:+s.games_played,
                     avg:s.games_played>0?s.points/s.games_played:null};
             }).sort((a,b)=>a.avg-b.avg);
+            const winner=sorted[0];
             return `<div class="card" style="margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
         <div class="ct" style="margin-bottom:0">Runde ${r.round_number}</div>
@@ -348,9 +402,9 @@
 
     // ── VERLAUF ────────────────────────────────────────────────────
     function renderVerlauf(){
-        if(!S.chartVis.size){[...new Set(S.history.map(r=>r.player))].forEach(p=>S.chartVis.add(p));}
+        if(!S.chartVis.size){const all=[...new Set(S.history.map(r=>r.player))];all.forEach(p=>S.chartVis.add(p));}
         const players=[...new Set(S.history.map(r=>r.player))];
-        const years=[...new Set(S.history.map(r=>+r.year))].sort((a,b)=>a-b);
+        const years=[...new Set(S.history.map(r=>r.year))].sort((a,b)=>a-b);
         document.getElementById("cleg").innerHTML=players.map(p=>{
             const on=S.chartVis.has(p),c=COL[p]||"#888";
             return `<div class="chip${on?"":" off"}"
@@ -379,9 +433,9 @@
             ctx.textAlign="right";ctx.fillText(v.toFixed(1),P.l-3,y+4);
         });
         ctx.fillStyle="#7a8fa6";ctx.font="9px 'Courier New'";ctx.textAlign="center";
-        years.forEach((yr,i)=>ctx.fillText(String(yr).slice(2)+(+yr===CUR?"*":""),xp(i),h-P.b+14));
+        years.forEach((yr,i)=>ctx.fillText(String(yr).slice(2)+(+yr===+CUR?"*":""),xp(i),h-P.b+14));
         const dm={};
-        S.history.forEach(r=>{(dm[r.player]=dm[r.player]||{})[+r.year]=+r.avg_points_per_game;});
+        S.history.forEach(r=>{(dm[r.player]=dm[r.player]||{})[r.year]=+r.avg_points_per_game;});
         players.forEach(p=>{
             if(!S.chartVis.has(p))return;
             const c=COL[p]||"#888";
@@ -396,7 +450,7 @@
     }
     window.addEventListener("resize",()=>{
         if(active==="verlauf"){
-            const y=[...new Set(S.history.map(r=>+r.year))].sort((a,b)=>a-b);
+            const y=[...new Set(S.history.map(r=>r.year))].sort((a,b)=>a-b);
             drawChart(y,[...new Set(S.history.map(r=>r.player))]);
         }
     });
@@ -406,7 +460,7 @@
         const el=document.getElementById("bbody");
         if(!S.alltime.length){el.innerHTML=`<div class="ld"><div class="sp"></div>Lade…</div>`;return;}
         const byYear={};
-        S.summary.forEach(r=>(byYear[+r.year]=byYear[+r.year]||[]).push(r));
+        S.summary.forEach(r=>(byYear[r.year]=byYear[r.year]||[]).push(r));
         const winners={};
         Object.entries(byYear).forEach(([yr,rows])=>{
             const w=rows.reduce((b,r)=>+r.avg_points_per_game<+b.avg_points_per_game?r:b);
@@ -439,9 +493,9 @@
       <div class="ct">Jahressieger</div>
       ${Object.entries(winners).sort((a,b)=>b[0]-a[0]).map(([yr,p])=>{
             const c=COL[p]||"#888";
-            const row=S.summary.find(r=>+r.year===+yr&&r.player===p);
+            const row=S.summary.find(r=>r.year==yr&&r.player===p);
             return `<div class="row">
-          <span style="color:var(--muted);font-size:10px;min-width:44px">${yr}${+yr===CUR?"*":""}</span>
+          <span style="color:var(--muted);font-size:10px;min-width:44px">${yr}${yr==CUR?"*":""}</span>
           <span style="color:${c};font-weight:600;font-size:12px;flex:1">${p}</span>
           <span style="color:var(--muted);font-size:10px">${row?(+row.avg_points_per_game).toFixed(4):""}</span>
         </div>`;
@@ -485,71 +539,67 @@
     function onSeasonChange(){
         const sel=document.getElementById("rseason");
         if(!sel)return;
+        const nr=estNextRound(parseInt(sel.value));
         const rnr=document.getElementById("rnr");
-        if(rnr)rnr.value=estNextRound(+sel.value);
+        if(rnr)rnr.value=nr;
     }
-
     function renderEntryForm(){
         if(!S.seasons.length){
             document.getElementById("ebody").innerHTML=`<div class="card"><p style="color:var(--muted);font-size:12px">Keine Saisonen gefunden.</p></div>`;
             return;
         }
         const activePlayers=S.players.filter(p=>p.active);
-        const defSeason=S.seasons.find(s=>+s.year===+S.selYearR)
-            ||S.seasons.find(s=>+s.year===CUR)
-            ||S.seasons[0];
+        const defSeason=S.seasons.find(s=>+s.year===+S.selYearR)||S.seasons.find(s=>+s.year===+CUR)||S.seasons[0];
         const defNr=estNextRound(defSeason.id);
-        const today=new Date().toISOString().slice(0,10);
-
-        // Build season options
-        const seasonOpts=S.seasons.map(s=>
-            `<option value="${s.id}"${s.id===defSeason.id?" selected":""}>${s.year} – ${s.label||s.year}</option>`
-        ).join("");
-
-        // Build player entries
-        const playerRows=activePlayers.map(p=>`
-    <div class="per" id="pe-${p.id}">
-      <div class="per-hdr">
-        <div class="dot" style="background:${COL[p.name]||"#888"}"></div>
-        <span class="pname">${p.name}</span>
-        <button class="tog" id="tog-${p.id}" onclick="togPlayer(${p.id})">Dabei?</button>
-      </div>
-      <div class="pflds hide" id="pf-${p.id}">
-        <div>
-          <div class="pfl">PUNKTE</div>
-          <input type="number" inputmode="decimal" class="pfi" id="pts-${p.id}" placeholder="0" min="0">
-        </div>
-        <div>
-          <div class="pfl">SPIELE</div>
-          <input type="number" inputmode="decimal" class="pfi" id="gms-${p.id}" placeholder="0" min="0">
-        </div>
-      </div>
-    </div>`).join("");
 
         document.getElementById("ebody").innerHTML=`
     <div class="card">
       <div class="ct">Neue Runde eintragen</div>
       <div style="margin-bottom:12px">
         <label class="fl">Saison</label>
-        <select id="rseason" class="fsel" onchange="onSeasonChange()">${seasonOpts}</select>
+        <select id="rseason" class="fsel" onchange="onSeasonChange()">
+          \${S.seasons.map(s=>`<option value="\${s.id}" \${s.id===defSeason.id?"selected":""}>\${s.year} – \${s.label||s.year}</option>`).join("")}
+        </select>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px">
         <div>
           <label class="fl">Runden-Nr.</label>
-          <input type="number" id="rnr" class="fi" value="${defNr}" min="1">
+          <input type="number" id="rnr" class="fi" value="\${defNr}" min="1">
         </div>
         <div>
           <label class="fl">Datum</label>
-          <input type="date" id="rdate" class="fi" value="${today}">
+          <input type="date" id="rdate" class="fi" value="\${new Date().toISOString().slice(0,10)}">
         </div>
       </div>
     </div>
+
     <div class="card">
       <div class="ct">Ergebnisse pro Spieler</div>
       <div class="cs">Spieler antippen um zu aktivieren, dann Punkte und Spiele eintragen</div>
-      <div id="player-entries">${playerRows}</div>
+      <div id="player-entries">
+        ${activePlayers.map(p=>`
+          <div class="per" id="pe-${p.id}">
+            <div class="per-hdr">
+              <div class="dot" style="background:${COL[p.name]||"#888"}"></div>
+              <span class="pname">${p.name}</span>
+              <button class="tog" id="tog-${p.id}" onclick="togPlayer(${p.id})">Dabei?</button>
+            </div>
+            <div class="pflds hide" id="pf-${p.id}">
+              <div>
+                <div class="pfl">PUNKTE</div>
+                <input type="number" inputmode="decimal" class="pfi" id="pts-${p.id}" placeholder="0" min="0">
+              </div>
+              <div>
+                <div class="pfl">SPIELE</div>
+                <input type="number" inputmode="decimal" class="pfi" id="gms-${p.id}" placeholder="0" min="0">
+              </div>
+            </div>
+          </div>`).join("")}
+      </div>
     </div>
+
     <button class="btn btn-p" onclick="submitRound()">Runde speichern</button>
+
     <div class="card" style="margin-top:14px">
       <div class="ct">Neue Saison anlegen</div>
       <div style="margin-bottom:10px">
@@ -562,88 +612,97 @@
       </div>
       <button class="btn btn-s" onclick="createSeason()">+ Saison anlegen</button>
     </div>
-    <button class="btn btn-s" onclick="S.pinOk=false;renderEntry()" style="margin-top:4px">🔒 Sperren</button>`;
-    }
 
-    function togPlayer(id){
-        const tog=document.getElementById("tog-"+id);
-        const flds=document.getElementById("pf-"+id);
-        const on=!tog.classList.contains("on");
-        tog.classList.toggle("on",on);
-        tog.textContent=on?"✓ Dabei":"Dabei?";
-        flds.classList.toggle("hide",!on);
-        if(on)document.getElementById("pts-"+id)?.focus();
-    }
+    <button class="btn btn-s" onclick="S.pinOk=false;renderEntry()" style="margin-top:4px">🔒 Sperren</button>\`;
+}
 
-    async function createSeason(){
-        const year=parseInt(document.getElementById("ns-year")?.value||"");
-        const label=document.getElementById("ns-label")?.value.trim()||"";
-        if(!year||year<2000){toast("Ungültiges Jahr","err");return;}
-        if(S.seasons.find(s=>+s.year===year)){toast(`Saison ${year} existiert bereits`,"err");return;}
-        try{
-            await api("seasons",{method:"POST",body:JSON.stringify({year,label:label||null})});
-            toast(`Saison ${year} angelegt`,"ok");
-            await doSync();
-            renderEntryForm();
-        }catch(e){toast(e.message,"err");}
-    }
+function togPlayer(id){
+  const tog=document.getElementById("tog-"+id);
+  const flds=document.getElementById("pf-"+id);
+  const on=!tog.classList.contains("on");
+  tog.classList.toggle("on",on);
+  tog.textContent=on?"✓ Dabei":"Dabei?";
+  flds.classList.toggle("hide",!on);
+  if(on) document.getElementById("pts-"+id)?.focus();
+}
 
-    async function submitRound(){
-        const nr=parseInt(document.getElementById("rnr")?.value||"");
-        const dt=document.getElementById("rdate")?.value||"";
-        if(!nr||nr<1){toast("Runden-Nr. fehlt","err");return;}
+async function createSeason(){
+  const year=parseInt(document.getElementById("ns-year")?.value||"");
+  const label=document.getElementById("ns-label")?.value.trim()||"";
+  if(!year||year<2000){toast("Ungültiges Jahr","err");return;}
+  if(S.seasons.find(s=>s.year===year)){toast(`Saison ${year} existiert bereits`,"err");return;}
+  try{
+    await api("seasons",{method:"POST",
+      body:JSON.stringify({year,label:label||null})});
+    toast(`Saison ${year} angelegt`,"ok");
+    await doSync();
+    renderEntryForm();
+  }catch(e){toast(e.message,"err");}
+}
 
-        const selSid=+document.getElementById("rseason")?.value;
-        const season=S.seasons.find(s=>+s.id===selSid);
-        if(!season){toast("Saison nicht gefunden","err");return;}
+async function submitRound(){
+  const nr=parseInt(document.getElementById("rnr")?.value||"");
+  const dt=document.getElementById("rdate")?.value||"";
+  if(!nr||nr<1){toast("Runden-Nr. fehlt","err");return;}
 
-        const scores=[];
-        S.players.filter(p=>p.active).forEach(p=>{
-            const tog=document.getElementById("tog-"+p.id);
-            if(!tog?.classList.contains("on"))return;
-            const pts=parseFloat(document.getElementById("pts-"+p.id)?.value||"");
-            const gms=parseFloat(document.getElementById("gms-"+p.id)?.value||"");
-            if(isNaN(pts)||isNaN(gms)||gms<=0)return;
-            scores.push({player_id:p.id,points:pts,games_played:gms});
-        });
+  const selSid=parseInt(document.getElementById("rseason")?.value||"0");
+  const season=S.seasons.find(s=>+s.id===+selSid)||S.seasons.find(s=>+s.year===+CUR);
+  if(!season){toast("Saison nicht gefunden","err");return;}
 
-        if(!scores.length){toast("Mindestens 1 Spieler mit Werten","err");return;}
+  // Collect active players
+  const scores=[];
+  S.players.filter(p=>p.active).forEach(p=>{
+    const tog=document.getElementById("tog-"+p.id);
+    if(!tog?.classList.contains("on"))return;
+    const pts=parseFloat(document.getElementById("pts-"+p.id)?.value||"");
+    const gms=parseFloat(document.getElementById("gms-"+p.id)?.value||"");
+    if(isNaN(pts)||isNaN(gms)||gms<=0){return;}
+    scores.push({player_id:p.id,points:pts,games_played:gms});
+  });
 
-        try{
-            const [round]=await api("rounds",{method:"POST",
-                body:JSON.stringify({season_id:season.id,round_number:nr,played_on:dt||null})});
-            await api("round_scores",{method:"POST",
-                body:JSON.stringify(scores.map(s=>({...s,round_id:round.id})))});
-            toast(`Runde ${nr} gespeichert (${scores.length} Spieler)`,"ok");
-            await doSync();
-            renderEntryForm();
-        }catch(e){toast("Fehler: "+e.message,"err");}
-    }
+  if(scores.length===0){toast("Mindestens 1 Spieler mit Werten","err");return;}
 
-    function toast(msg,type=""){
-        const el=document.getElementById("toast");
-        el.textContent=msg;el.className="show "+(type||"");
-        clearTimeout(toast._t);toast._t=setTimeout(()=>el.className="",3000);
-    }
+  try{
+    // 1. Create round
+    const [round]=await api("rounds",{method:"POST",
+      body:JSON.stringify({season_id:season.id,round_number:nr,played_on:dt||null})});
 
-    window.addEventListener("online",()=>document.body.classList.remove("offline"));
-    window.addEventListener("offline",()=>document.body.classList.add("offline"));
-    if(!navigator.onLine)document.body.classList.add("offline");
-    if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+    // 2. Insert scores
+    const rows=scores.map(s=>({...s,round_id:round.id}));
+    await api("round_scores",{method:"POST",body:JSON.stringify(rows)});
 
-    (async()=>{
-        if(!BASE||BASE.includes("DEINE")){
-            document.getElementById("sbody").innerHTML=`
-      <div class="card" style="border-color:var(--accent)">
-        <div class="ct" style="color:var(--accent)">⚙ config.js befüllen</div>
+    toast(`Runde ${nr} gespeichert (${scores.length} Spieler)`,"ok");
+    await doSync();
+    renderEntryForm();
+  }catch(e){toast("Fehler: "+e.message,"err");}
+}
+
+// ── Toast ──────────────────────────────────────────────────────
+function toast(msg,type=""){
+  const el=document.getElementById("toast");
+  el.textContent=msg;el.className="show "+(type||"");
+  clearTimeout(toast._t);toast._t=setTimeout(()=>el.className="",3000);
+}
+
+// ── Init ───────────────────────────────────────────────────────
+window.addEventListener("online",()=>document.body.classList.remove("offline"));
+window.addEventListener("offline",()=>document.body.classList.add("offline"));
+if(!navigator.onLine)document.body.classList.add("offline");
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+
+(async()=>{
+  if(!BASE||BASE.includes("DEINE")){
+    document.getElementById("sbody").innerHTML=`
+        <div class="card" style="border-color:var(--accent)">
+            <div class="ct" style="color:var(--accent)">⚙ config.js befüllen</div>
         <p style="color:var(--muted);font-size:11px;line-height:1.7">
-          Supabase-URL und API-Key in <b>config.js</b> eintragen, dann neu laden.
+            Supabase-URL und API-Key in <b>config.js</b> eintragen, dann neu laden.
         </p>
-      </div>`;
-            return;
-        }
-        await doSync();
-    })();
+    </div>`;
+    return;
+  }
+  await doSync();
+})();
 </script>
 </body>
 </html>
