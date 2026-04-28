@@ -472,7 +472,7 @@
         Object.values(winners).forEach(function(p){ wc[p] = (wc[p] || 0) + 1; });
 
         var atRows = (function() {
-            if (!S.filterActive) return S.alltime
+            if (!S.filterActive) return S.alltime.filter(function(r){ return r.seasons_played >= 3; })
                 .map(function(r){ return {name:r.player, avg:+r.alltime_avg, seasons:r.seasons_played, active:r.active}; });
             var pm2 = {};
             S.summary.forEach(function(r) {
@@ -483,7 +483,7 @@
                 pm2[r.player].seasons++;
             });
             var at2 = S.alltime.reduce(function(m,r){ m[r.player] = r; return m; }, {});
-            return Object.keys(pm2).map(function(n) {
+            return Object.keys(pm2).filter(function(n){ return pm2[n].seasons >= 3; }).map(function(n) {
                 return {name:n, avg:pm2[n].totalGms ? pm2[n].totalPts/pm2[n].totalGms : 0,
                     seasons:pm2[n].seasons, active: at2[n] ? at2[n].active : true};
             }).sort(function(a,b){ return a.avg - b.avg; });
@@ -491,7 +491,7 @@
 
         el.innerHTML =
             '<div class="card"><div class="ct">Gesamtrangliste</div>' +
-            '<div class="cs">\u00d8 Punkte/Spiel \u00fcber alle Saisonen</div>' +
+            '<div class="cs">\u00d8 Punkte/Spiel \u00fcber alle Saisonen (mind. 3)</div>' +
             atRows.map(function(r, i) {
                 var a = r.avg, c = COL[r.name] || "#888", ww = wc[r.name] || 0;
                 var bw = Math.max(0, (1 - (a - 1.4) / (3.0 - 1.4)) * 100);
@@ -517,7 +517,7 @@
                     pm[r.player].seasons++;
                 });
                 var at = S.alltime.reduce(function(m,r){ m[r.player] = r; return m; }, {});
-                var stats = Object.keys(pm).map(function(name) {
+                var stats = Object.keys(pm).filter(function(n){ return pm[n].seasons >= 3; }).map(function(name) {
                     var ranks = pm[name].ranks;
                     var sum = ranks.reduce(function(a,b){ return a+b; }, 0);
                     var avg = sum / ranks.length;
@@ -527,7 +527,7 @@
                 var hi = stats.length ? stats[stats.length-1].avg : 1;
                 var lo = stats.length ? stats[0].avg : 1;
                 return '<div class="card"><div class="ct">Gesamtrangliste</div>' +
-                    '<div class="cs">Ø Platzierung über alle Saisonen</div>' +
+                    '<div class="cs">Ø Platzierung über alle Saisonen (mind. 3)</div>' +
                     stats.map(function(r, i) {
                         var c = COL[r.name] || "#888";
                         var bw = hi > lo ? Math.round((1 - (r.avg - lo) / (hi - lo)) * 100) : 80;
