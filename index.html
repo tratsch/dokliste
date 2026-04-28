@@ -392,16 +392,26 @@
         var players = [...new Set(S.history.map(function(r){ return r.player; }))];
         var years   = [...new Set(S.history.map(function(r){ return +r.year; }))].sort(function(a,b){ return a-b; });
 
-        document.getElementById("cleg").innerHTML = players.map(function(p) {
-            var on = S.chartVis.has(p), c = COL[p] || "#888";
-            return '<div class="chip' + (on ? "" : " off") + '"' +
-                ' style="color:' + c + ';border-color:' + (on ? c : "var(--border2)") + ';background:' + (on ? c+"18" : "transparent") + '"' +
-                ' onclick="togC(\'' + p + '\')">' + p + '</div>';
-        }).join("");
+        var allOn = players.every(function(p){ return S.chartVis.has(p); });
+        var allOff = players.every(function(p){ return !S.chartVis.has(p); });
+        document.getElementById("cleg").innerHTML =
+            '<button class="stab' + (allOn ? ' on' : '') + '" onclick="togAll(true)" style="font-size:9px;padding:3px 8px">Alle an</button>' +
+            '<button class="stab' + (allOff ? ' on' : '') + '" onclick="togAll(false)" style="font-size:9px;padding:3px 8px">Alle aus</button>' +
+            players.map(function(p) {
+                var on = S.chartVis.has(p), c = COL[p] || "#888";
+                return '<div class="chip' + (on ? "" : " off") + '"' +
+                    ' style="color:' + c + ';border-color:' + (on ? c : "var(--border2)") + ';background:' + (on ? c+"18" : "transparent") + '"' +
+                    ' onclick="togC(\'' + p + '\')">' + p + '</div>';
+            }).join("");
         drawChart(years, players);
     }
 
     function togC(p) { S.chartVis.has(p) ? S.chartVis.delete(p) : S.chartVis.add(p); renderVerlauf(); }
+    function togAll(on) {
+        var players = [...new Set(S.history.map(function(r){ return r.player; }))];
+        players.forEach(function(p){ on ? S.chartVis.add(p) : S.chartVis.delete(p); });
+        renderVerlauf();
+    }
 
     function drawChart(years, players) {
         var cv = document.getElementById("chart");
