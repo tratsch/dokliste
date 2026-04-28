@@ -558,17 +558,17 @@
       <div style="margin-bottom:12px">
         <label class="fl">Saison</label>
         <select id="rseason" class="fsel" onchange="onSeasonChange()">
-          \${S.seasons.map(s=>`<option value="\${s.id}" \${s.id===defSeason.id?"selected":""}>\${s.year} – \${s.label||s.year}</option>`).join("")}
+          ${S.seasons.map(s=>`<option value="${s.id}" ${s.id===defSeason.id?"selected":""}>${s.year} – ${s.label||s.year}</option>`).join("")}
         </select>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px">
         <div>
           <label class="fl">Runden-Nr.</label>
-          <input type="number" id="rnr" class="fi" value="\${defNr}" min="1">
+          <input type="number" id="rnr" class="fi" value="${defNr}" min="1">
         </div>
         <div>
           <label class="fl">Datum</label>
-          <input type="date" id="rdate" class="fi" value="\${new Date().toISOString().slice(0,10)}">
+          <input type="date" id="rdate" class="fi" value="${new Date().toISOString().slice(0,10)}">
         </div>
       </div>
     </div>
