@@ -503,7 +503,7 @@
             atRows.map(function(r, i) {
                 var a = r.avg, c = COL[r.name] || "#888", ww = wc[r.name] || 0;
                 var bw = Math.max(0, (1 - (a - 1.4) / (3.0 - 1.4)) * 100);
-                var trophies = ww ? " " + "\u{1F3C6}".repeat(Math.min(ww, 4)) : "";
+                var trophies = ww ? " " + "\u{1F3C6}".repeat(ww) : "";
                 return '<div class="rrow"><div class="rnum">#' + (i+1) + '</div>' +
                     '<div style="flex:1;min-width:0">' +
                     '<div style="display:flex;justify-content:space-between">' +
