@@ -1,5 +1,5 @@
 // Doppelkopf Liste – Service Worker
-const CACHE = "doko-v4";
+const CACHE = "doko-v5";
 const ASSETS = ["/dokliste/manifest.json", "/dokliste/config.js", "/dokliste/icon-192.png", "/dokliste/icon-512.png"];
 
 self.addEventListener("install", e => {
@@ -19,8 +19,8 @@ self.addEventListener("activate", e => {
 self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
 
-  // Supabase API: Network-first, Cache-Fallback
-  if (url.hostname.includes("supabase.co")) {
+  // PocketBase API: Network-first, Cache-Fallback
+  if (url.pathname.startsWith("/api/")) {
     e.respondWith(
       fetch(e.request)
         .then(res => {

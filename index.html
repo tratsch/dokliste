@@ -183,9 +183,8 @@
 <script>
     /* jshint esversion:6 */
     const CFG = window.DOKO_CONFIG || {};
-    const BASE = CFG.supabaseUrl || "";
-    const KEY  = CFG.supabaseKey || "";
-    const PIN  = CFG.entryPin   || "1234";
+    const BASE = CFG.pocketbaseUrl || "";
+    const PIN  = CFG.entryPin || "1234";
     const CUR  = +(CFG.currentSeason || new Date().getFullYear());
 
     const COL = {
@@ -195,7 +194,8 @@
     };
 
     const S = {
-        summary:[], history:[], alltime:[], players:[], seasons:[],
+        summary:[], history:[], alltime:[],
+        players:[], seasons:[], rounds:[], scores:[],
         selYear:null, selYearR:null,
         chartVis:new Set(),
         pinOk:false,
@@ -203,20 +203,116 @@
     };
 
     // ── API ───────────────────────────────────────────────────────
-    async function api(path, opts) {
-        opts = opts || {};
-        const r = await fetch(BASE + "/rest/v1/" + path, {
-            headers: {
-                apikey: KEY,
-                Authorization: "Bearer " + KEY,
-                "Content-Type": "application/json",
-                Prefer: opts.prefer || "return=representation"
-            },
-            method: opts.method,
-            body: opts.body
+    async function pbList(coll, params) {
+        params = params || {};
+        var qs = new URLSearchParams();
+        qs.set("perPage", params.perPage || 500);
+        if (params.sort)   qs.set("sort",   params.sort);
+        if (params.filter) qs.set("filter", params.filter);
+        var items = [], page = 1;
+        while (true) {
+            qs.set("page", page);
+            var r = await fetch(BASE + "/api/collections/" + coll + "/records?" + qs.toString());
+            if (!r.ok) throw new Error(await r.text());
+            var data = await r.json();
+            items = items.concat(data.items);
+            if (page >= data.totalPages) break;
+            page++;
+        }
+        return items;
+    }
+
+    async function pbCreate(coll, body) {
+        var r = await fetch(BASE + "/api/collections/" + coll + "/records", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(body)
         });
         if (!r.ok) throw new Error(await r.text());
-        return r.status === 204 ? null : r.json().catch(function(){ return null; });
+        return r.json();
+    }
+
+    function buildViews() {
+        var playerById = {}; S.players.forEach(function(p){ playerById[p.id] = p; });
+        var seasonById = {}; S.seasons.forEach(function(s){ seasonById[s.id] = s; });
+        var roundById  = {}; S.rounds.forEach(function(r){ roundById[r.id]  = r; });
+
+        var agg = {};
+        S.scores.forEach(function(sc) {
+            var round  = roundById[sc.round];   if (!round)  return;
+            var season = seasonById[round.season]; if (!season) return;
+            var player = playerById[sc.player]; if (!player) return;
+            var key = season.year + "|" + player.id;
+            var a = agg[key];
+            if (!a) a = agg[key] = {
+                year: +season.year, season_label: season.label || "",
+                player_id: player.id, player: player.name, color_hex: player.color_hex,
+                rounds: new Set(), total_games: 0, total_points: 0
+            };
+            a.rounds.add(round.id);
+            a.total_games  += +sc.games_played;
+            a.total_points += +sc.points;
+        });
+        var summary = Object.keys(agg).map(function(k) {
+            var a = agg[k];
+            return {
+                year: a.year, season_label: a.season_label,
+                player_id: a.player_id, player: a.player, color_hex: a.color_hex,
+                rounds_played: a.rounds.size,
+                total_games:   a.total_games,
+                total_points:  a.total_points,
+                avg_points_per_game: a.total_games ? a.total_points / a.total_games : 0,
+                season_rank: 0
+            };
+        });
+        var byYear = {};
+        summary.forEach(function(r){ (byYear[r.year] = byYear[r.year] || []).push(r); });
+        Object.keys(byYear).forEach(function(y) {
+            byYear[y].sort(function(a,b){ return a.avg_points_per_game - b.avg_points_per_game; });
+            byYear[y].forEach(function(r, i){ r.season_rank = i + 1; });
+        });
+        S.summary = summary;
+
+        S.history = summary.map(function(r) {
+            return {
+                player: r.player, color_hex: r.color_hex, year: r.year,
+                season_rank: r.season_rank,
+                avg_points_per_game: r.avg_points_per_game,
+                total_games: r.total_games
+            };
+        });
+
+        var winsBy = {};
+        summary.filter(function(r){ return r.season_rank === 1; })
+               .forEach(function(r){ winsBy[r.player_id] = (winsBy[r.player_id] || 0) + 1; });
+
+        var atAgg = {};
+        S.scores.forEach(function(sc) {
+            var round  = roundById[sc.round];   if (!round)  return;
+            var season = seasonById[round.season]; if (!season) return;
+            var player = playerById[sc.player]; if (!player) return;
+            var a = atAgg[player.id];
+            if (!a) a = atAgg[player.id] = {
+                player_id: player.id, player: player.name, color_hex: player.color_hex,
+                active: player.active, seasons: new Set(),
+                total_games: 0, total_points: 0
+            };
+            a.seasons.add(+season.year);
+            a.total_games  += +sc.games_played;
+            a.total_points += +sc.points;
+        });
+        S.alltime = Object.keys(atAgg).map(function(k) {
+            var a = atAgg[k];
+            return {
+                player_id: a.player_id, player: a.player, color_hex: a.color_hex,
+                active: a.active,
+                seasons_played:    a.seasons.size,
+                total_games_ever:  a.total_games,
+                total_points_ever: a.total_points,
+                alltime_avg: a.total_games ? a.total_points / a.total_games : 0,
+                season_wins: winsBy[a.player_id] || 0
+            };
+        }).sort(function(a,b){ return a.alltime_avg - b.alltime_avg; });
     }
 
     async function doSync() {
@@ -224,14 +320,14 @@
         b.classList.add("syncing"); b.textContent = "\u21bb \u2026";
         try {
             const res = await Promise.all([
-                api("v_season_summary?order=year.desc,season_rank"),
-                api("v_rank_history?order=year,player"),
-                api("v_alltime_ranking?order=alltime_avg"),
-                api("players?order=name"),
-                api("seasons?order=year.desc")
+                pbList("players",      {sort: "name"}),
+                pbList("seasons",      {sort: "-year"}),
+                pbList("rounds",       {sort: "round_number"}),
+                pbList("round_scores")
             ]);
-            S.summary = res[0]; S.history = res[1]; S.alltime = res[2];
-            S.players = res[3]; S.seasons = res[4];
+            S.players = res[0]; S.seasons = res[1];
+            S.rounds  = res[2]; S.scores  = res[3];
+            buildViews();
             if (!S.chartVis.size) {
                 [...new Set(S.history.map(function(r){ return r.player; }))].forEach(function(p){ S.chartVis.add(p); });
             }
@@ -327,50 +423,48 @@
     function toggleFilter() { S.filterActive = !S.filterActive; render(); }
 
     // ── RUNDEN ────────────────────────────────────────────────────
-    async function renderRunden() {
+    function renderRunden() {
         var years = S.seasons.map(function(s){ return +s.year; }).sort(function(a,b){ return b-a; });
         if (years.length && (!S.selYearR || !years.includes(+S.selYearR))) S.selYearR = years[0];
 
         document.getElementById("stabs2").innerHTML = years.map(function(y) {
             var on = +y === +S.selYearR ? " on" : "";
-            var cur = "";
-            return '<button class="stab' + on + '" onclick="selY(' + y + ',\'runden\')">' + y + cur + '</button>';
+            return '<button class="stab' + on + '" onclick="selY(' + y + ',\'runden\')">' + y + '</button>';
         }).join("");
 
         var el = document.getElementById("rbody");
         var season = S.seasons.find(function(s){ return +s.year === +S.selYearR; });
         if (!season) { el.innerHTML = '<div class="ld">Keine Saison gefunden</div>'; return; }
 
-        el.innerHTML = '<div class="ld"><div class="sp"></div>Lade\u2026</div>';
-        var rounds;
-        try { rounds = await api("rounds?season_id=eq." + season.id + "&order=round_number"); }
-        catch(e) { el.innerHTML = '<div class="ld">' + e.message + '</div>'; return; }
+        var rounds = S.rounds.filter(function(r){ return r.season === season.id; })
+            .sort(function(a,b){ return +a.round_number - +b.round_number; });
 
         if (!rounds.length) {
             el.innerHTML = '<div class="card"><p style="color:var(--muted);font-size:12px">Noch keine Runden.</p></div>';
             return;
         }
 
-        var ids = rounds.map(function(r){ return r.id; }).join(",");
-        var allScores = [];
-        try { allScores = await api("round_scores?round_id=in.(" + ids + ")"); } catch(e) {}
-
+        var idSet = {};
+        rounds.forEach(function(r){ idSet[r.id] = true; });
         var byRound = {};
-        allScores.forEach(function(s){ (byRound[s.round_id] = byRound[s.round_id] || []).push(s); });
+        S.scores.forEach(function(s){
+            if (idSet[s.round]) (byRound[s.round] = byRound[s.round] || []).push(s);
+        });
 
         el.innerHTML = rounds.map(function(r) {
             var scores = (byRound[r.id] || []).map(function(s) {
-                var p = S.players.find(function(pp){ return pp.id === s.player_id; });
+                var p = S.players.find(function(pp){ return pp.id === s.player; });
                 var g = +s.games_played;
                 return { name: p ? p.name : "?", points: +s.points, games: g,
                     avg: g > 0 ? +s.points / g : null };
             }).sort(function(a,b){ return a.avg - b.avg; });
 
             var medals = ["&#127945;","&#127946;","&#127947;"];
+            var dt = r.played_on ? String(r.played_on).slice(0, 10) : "";
             return '<div class="card" style="margin-bottom:10px">' +
                 '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">' +
                 '<div class="ct" style="margin-bottom:0">Runde ' + r.round_number + '</div>' +
-                '<div style="font-size:10px;color:var(--muted)">' + (r.played_on || "") + '</div>' +
+                '<div style="font-size:10px;color:var(--muted)">' + dt + '</div>' +
                 '</div>' +
                 (scores.length ? scores.map(function(s,i) {
                     var c = COL[s.name] || "#888";
@@ -626,16 +720,14 @@
     }
 
     function estNextRound(seasonId) {
-        var s = S.seasons.find(function(x){ return +x.id === +seasonId; });
-        if (!s) return 1;
-        var rows = S.summary.filter(function(r){ return +r.year === +s.year; });
-        if (!rows.length) return 1;
-        return Math.max.apply(null, rows.map(function(r){ return +r.rounds_played || 0; })) + 1;
+        var rs = S.rounds.filter(function(r){ return r.season === seasonId; });
+        if (!rs.length) return 1;
+        return Math.max.apply(null, rs.map(function(r){ return +r.round_number || 0; })) + 1;
     }
     function onSeasonChange() {
         var sel = document.getElementById("rseason");
         var rnr = document.getElementById("rnr");
-        if (sel && rnr) rnr.value = estNextRound(+sel.value);
+        if (sel && rnr) rnr.value = estNextRound(sel.value);
     }
 
     function renderEntryForm() {
@@ -652,7 +744,7 @@
         var today   = new Date().toISOString().slice(0, 10);
 
         var seasonOpts = S.seasons.map(function(s) {
-            var sel = +s.id === +defSeason.id ? " selected" : "";
+            var sel = s.id === defSeason.id ? " selected" : "";
             var lbl = s.label || s.year;
             return '<option value="' + s.id + '"' + sel + '>' + s.year + ' \u2013 ' + lbl + '</option>';
         }).join("");
@@ -719,11 +811,15 @@
             toast("Saison " + year + " existiert bereits", "err"); return;
         }
         try {
-            await api("seasons", {method:"POST", body:JSON.stringify({year:year, label:label||null})});
+            await pbCreate("seasons", {year: year, label: label || ""});
             toast("Saison " + year + " angelegt", "ok");
             await doSync();
             renderEntryForm();
         } catch(e) { toast(e.message, "err"); }
+    }
+
+    function toPbDate(d) {
+        return d ? (d + " 00:00:00.000Z") : "";
     }
 
     async function submitRound() {
@@ -734,8 +830,8 @@
         var dt   = dtEl ? dtEl.value : "";
         if (!nr || nr < 1) { toast("Runden-Nr. fehlt", "err"); return; }
 
-        var selSid = rsEl ? +rsEl.value : 0;
-        var season = S.seasons.find(function(s){ return +s.id === selSid; });
+        var selSid = rsEl ? rsEl.value : "";
+        var season = S.seasons.find(function(s){ return s.id === selSid; });
         if (!season) { toast("Saison nicht gefunden", "err"); return; }
 
         var scores = [];
@@ -747,7 +843,7 @@
             var pts = parseFloat(ptsEl ? ptsEl.value : "");
             var gms = parseFloat(gmsEl ? gmsEl.value : "");
             if (isNaN(pts) || isNaN(gms) || gms <= 0) return;
-            scores.push({player_id:p.id, points:pts, games_played:gms});
+            scores.push({player: p.id, points: pts, games_played: gms});
         });
 
         if (!scores.length) { toast("Mindestens 1 Spieler mit Werten", "err"); return; }
@@ -756,11 +852,20 @@
         if (totalGames % 4 !== 0) { toast("Spiele-Summe (" + totalGames + ") nicht durch 4 teilbar", "err"); return; }
 
         try {
-            var res = await api("rounds", {method:"POST",
-                body:JSON.stringify({season_id:season.id, round_number:nr, played_on:dt||null})});
-            var round = Array.isArray(res) ? res[0] : res;
-            var rows = scores.map(function(s){ return Object.assign({}, s, {round_id:round.id}); });
-            await api("round_scores", {method:"POST", body:JSON.stringify(rows)});
+            var round = await pbCreate("rounds", {
+                season: season.id, round_number: nr, played_on: toPbDate(dt)
+            });
+            for (var i = 0; i < scores.length; i++) {
+                try {
+                    await pbCreate("round_scores", Object.assign({round: round.id}, scores[i]));
+                } catch(scErr) {
+                    // Kompensation: gerade angelegte Runde wieder löschen
+                    try {
+                        await fetch(BASE + "/api/collections/rounds/records/" + round.id, {method: "DELETE"});
+                    } catch(_) {}
+                    throw scErr;
+                }
+            }
             toast("Runde " + nr + " gespeichert (" + scores.length + " Spieler)", "ok");
             await doSync();
             renderEntryForm();
@@ -783,12 +888,12 @@
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function(){});
 
     (async function() {
-        if (!BASE || BASE.includes("DEINE")) {
+        if (!BASE) {
             document.getElementById("sbody").innerHTML =
                 '<div class="card" style="border-color:var(--accent)">' +
                 '<div class="ct" style="color:var(--accent)">&#9881; config.js befüllen</div>' +
                 '<p style="color:var(--muted);font-size:11px;line-height:1.7">' +
-                'Supabase-URL und API-Key in <b>config.js</b> eintragen, dann neu laden.</p></div>';
+                '<b>pocketbaseUrl</b> in <b>config.js</b> eintragen, dann neu laden.</p></div>';
             return;
         }
         await doSync();
