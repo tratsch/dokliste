@@ -25,18 +25,23 @@
       *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
       html,body{height:100%;overflow:hidden;}
       body{background:var(--bg);color:var(--text);
-          font-family:'DM Mono','Courier New',monospace;font-size:13px;
+          font-family:'DM Mono','Courier New',monospace;font-size:1.0625rem;
           display:flex;flex-direction:column;}
       #app{flex:1;overflow:hidden;display:flex;flex-direction:column;}
-      #hdr{padding:calc(var(--safe-top) + 18px) 24px 18px;background:var(--bg2);
+      #hdr{padding:calc(var(--safe-top) + 18px) 16px 18px;background:var(--bg2);
           border-bottom:1px solid var(--border);display:flex;align-items:center;
-          justify-content:space-between;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.06);}
-      #hdr h1{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--text);}
+          justify-content:space-between;flex-wrap:wrap;gap:10px;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+      #hdr h1{font-family:'Syne',sans-serif;font-size:1.75rem;font-weight:800;color:var(--text);}
       #hdr h1 span{color:var(--accent);}
-      .sub{font-size:10px;color:var(--muted);}
+      .sub{font-size:0.8125rem;color:var(--muted);}
       #sync-btn{background:transparent;border:1px solid var(--border2);color:var(--muted);
-          padding:4px 10px;border-radius:4px;font-family:inherit;font-size:10px;cursor:pointer;}
+          padding:4px 10px;border-radius:4px;font-family:inherit;font-size:0.8125rem;cursor:pointer;}
       #sync-btn.syncing{color:var(--accent);border-color:var(--accent);animation:pulse 1s infinite;}
+      #filterbar{display:flex;align-items:center;justify-content:space-between;gap:8px;
+          padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;}
+      #filterbar[hidden]{display:none;}
+      #filter-status{font-size:0.8125rem;color:var(--muted);}
+      #participation-filter{white-space:nowrap;padding:6px 10px;}
       @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
       #views{flex:1;overflow:hidden;position:relative;}
       .view{position:absolute;inset:0;overflow-y:auto;padding:14px;display:none;
@@ -44,75 +49,89 @@
       .view.active{display:block;}
       #nav{display:flex;background:var(--bg2);border-top:1px solid var(--border);
           padding-bottom:var(--safe-bot);flex-shrink:0;box-shadow:0 -1px 4px rgba(0,0,0,.06);}
-      .nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+      .nb{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;
           padding:8px 4px;background:transparent;border:none;cursor:pointer;
-          color:var(--muted);font-family:inherit;font-size:9px;transition:color .15s;}
+          color:var(--muted);font-family:inherit;font-size:0.75rem;line-height:1.25;transition:color .15s;}
+      .nb span{max-width:100%;}
       .nb.on{color:var(--accent);}
       .nb svg{width:20px;height:20px;stroke-width:1.8;}
       .card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;
           padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
-      .ct{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;
+      .ct{font-family:'Syne',sans-serif;font-weight:700;font-size:1.0625rem;
           color:var(--text);margin-bottom:10px;}
-      .cs{font-size:10px;color:var(--muted);margin-bottom:12px;margin-top:-6px;}
+      .cs{font-size:0.8125rem;color:var(--muted);margin-bottom:12px;margin-top:-6px;}
       .stabs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px;}
       .stab{background:transparent;border:1px solid var(--border2);color:var(--muted);
-          padding:4px 10px;border-radius:4px;font-family:inherit;font-size:10px;cursor:pointer;}
+          padding:4px 10px;border-radius:4px;font-family:inherit;font-size:0.8125rem;cursor:pointer;}
       .stab.on{background:var(--accent);border-color:var(--accent);color:#fff;}
       .rrow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);}
       .rrow:last-child{border-bottom:none;}
-      .rnum{font-size:11px;color:var(--muted);min-width:22px;text-align:right;}
-      .rname{font-weight:600;font-size:13px;flex:1;}
-      .ravg{font-size:13px;font-weight:700;}
-      .rgms{font-size:10px;color:var(--muted);min-width:50px;text-align:right;}
+      .rnum{font-size:0.875rem;color:var(--muted);min-width:22px;text-align:right;}
+      .rname{font-weight:600;font-size:1.0625rem;flex:1;min-width:0;overflow-wrap:anywhere;}
+      .ravg{font-size:1.0625rem;font-weight:700;white-space:nowrap;}
+      .rgms{font-size:0.8125rem;color:var(--muted);min-width:50px;text-align:right;}
       .rbar{height:3px;background:var(--border);border-radius:2px;margin-top:3px;overflow:hidden;}
       .rbfill{height:100%;border-radius:2px;}
       .row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);}
       .row:last-child{border-bottom:none;}
+      .round-games{text-align:right;}
+      @media(max-width:480px){
+          .round-score{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:4px 8px;}
+          .round-score>span:first-child{grid-row:1 / 3;}
+          .round-score>span:nth-child(2){grid-column:2;min-width:0;overflow-wrap:anywhere;}
+          .round-score>span:nth-child(3){grid-column:3;grid-row:1;}
+          .round-score>span:nth-child(4){grid-column:2;grid-row:2;text-align:left;}
+          .round-score>span:nth-child(5){grid-column:3;grid-row:2;}
+      }
       .cwrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;
           padding:12px 6px 6px;margin-bottom:10px;}
       canvas{display:block;max-width:100%;}
       .cleg{display:flex;flex-wrap:wrap;gap:6px;padding:8px 6px 2px;}
-      .chip{font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid;cursor:pointer;}
+      .chip{font-size:0.8125rem;padding:2px 8px;border-radius:20px;border:1px solid;cursor:pointer;}
       .chip.off{opacity:.3;}
       .btn{width:100%;padding:11px;border-radius:8px;border:none;
-          font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;}
+          font-family:inherit;font-size:1.0625rem;font-weight:600;cursor:pointer;}
       .btn+.btn{margin-top:8px;}
       .btn-p{background:var(--accent);color:#fff;}
       .btn-p:active{opacity:.85;}
       .btn-p:disabled{opacity:.55;cursor:default;}
       .btn-s{background:var(--bg3);color:var(--muted);border:1px solid var(--border2);}
-      .fl{display:block;font-size:10px;color:var(--muted);margin-bottom:4px;
+      .round-actions{display:flex;gap:8px;margin-top:12px;}
+      .round-actions .btn{flex:1;width:auto;padding:8px;font-size:0.875rem;margin:0;}
+      .btn-danger{color:var(--accent);}
+      button:disabled{opacity:.55;cursor:default;}
+      .fl{display:block;font-size:0.8125rem;color:var(--muted);margin-bottom:4px;
           text-transform:uppercase;letter-spacing:.5px;}
       .fi,.fsel{width:100%;background:var(--bg3);border:1px solid var(--border2);
-          color:var(--text);padding:9px 12px;border-radius:6px;font-family:inherit;font-size:12px;}
+          color:var(--text);padding:9px 12px;border-radius:6px;font-family:inherit;font-size:1rem;}
       .fi:focus,.fsel:focus{outline:none;border-color:var(--accent);}
       .per{background:var(--bg3);border:1px solid var(--border);border-radius:8px;
           padding:10px 12px;margin-bottom:8px;}
       .per-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
       .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-      .pname{font-weight:600;font-size:12px;flex:1;}
+      .pname{font-weight:600;font-size:1rem;flex:1;}
       .tog{background:var(--bg2);color:var(--muted);border:1px solid var(--border2);
-          border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:inherit;}
+          border-radius:5px;padding:3px 8px;font-size:0.8125rem;cursor:pointer;font-family:inherit;}
       .tog.on{background:var(--accent);color:#fff;border-color:var(--accent);}
       .pflds{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
       .pflds.hide{display:none;}
-      .pfl{font-size:9px;color:var(--muted);margin-bottom:3px;}
+      .pfl{font-size:0.75rem;color:var(--muted);margin-bottom:3px;}
       .pfi{width:100%;background:var(--bg2);border:1px solid var(--border2);
-          color:var(--text);padding:6px 8px;border-radius:5px;font-family:inherit;font-size:14px;text-align:center;}
+          color:var(--text);padding:6px 8px;border-radius:5px;font-family:inherit;font-size:1.125rem;text-align:center;}
       .pfi:focus{outline:none;border-color:var(--accent);}
       .pin-wrap{display:flex;align-items:center;justify-content:center;padding:40px 0;}
       .pin-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;
           padding:28px 24px;width:280px;box-shadow:0 4px 20px rgba(0,0,0,.08);}
-      .pin-box h2{font-family:'Syne',sans-serif;font-size:16px;margin-bottom:14px;}
+      .pin-box h2{font-family:'Syne',sans-serif;font-size:1.25rem;margin-bottom:14px;}
       .pini{width:100%;background:var(--bg3);border:1px solid var(--border2);
           color:var(--text);padding:10px 12px;border-radius:6px;font-family:inherit;
-          font-size:18px;letter-spacing:8px;text-align:center;margin-bottom:10px;}
+          font-size:1.4375rem;letter-spacing:8px;text-align:center;margin-bottom:10px;}
       .pini:focus{outline:none;border-color:var(--accent);}
-      .perr{font-size:11px;color:var(--accent);text-align:center;min-height:14px;margin-bottom:8px;}
+      .perr{font-size:0.875rem;color:var(--accent);text-align:center;min-height:14px;margin-bottom:8px;}
       #toast{position:fixed;bottom:calc(68px + var(--safe-bot));left:50%;
           transform:translateX(-50%) translateY(20px);background:var(--bg2);
           border:1px solid var(--border2);border-radius:8px;padding:10px 18px;
-          font-size:12px;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;
+          font-size:1rem;opacity:0;transition:all .25s;pointer-events:none;max-width:calc(100vw - 28px);width:max-content;
           z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.1);}
       #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
       #toast.err{border-color:var(--accent);color:var(--accent);}
@@ -123,7 +142,7 @@
       .ld{display:flex;align-items:center;justify-content:center;gap:10px;
           padding:40px;color:var(--muted);}
       #offline{display:none;background:#fff0f1;border-bottom:1px solid #fbb;
-          padding:6px 16px;font-size:10px;color:var(--accent);text-align:center;}
+          padding:6px 16px;font-size:0.8125rem;color:var(--accent);text-align:center;}
       body.offline #offline{display:block;}
       ::-webkit-scrollbar{width:2px;}
       ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
@@ -138,6 +157,11 @@
     </div>
     <button id="sync-btn" onclick="doSync()">&#8635; Sync</button>
   </div>
+  <div id="filterbar">
+    <span id="filter-status">Teilnahme je Saison</span>
+    <button id="participation-filter" class="tog" aria-pressed="false" onclick="toggleFilter()"
+      title="Nur Spieler mit mehr als 10 % aller Runden der jeweiligen Saison; Eingabe bleibt vollständig">&gt;10 % Runden</button>
+  </div>
   <div id="views">
     <div id="v-saison" class="view active">
       <div id="stabs" class="stabs"></div>
@@ -150,7 +174,7 @@
     <div id="v-verlauf" class="view">
       <div class="cwrap"><canvas id="chart" height="300"></canvas></div>
       <div class="cleg" id="cleg"></div>
-      <p style="font-size:9px;color:var(--muted);margin-top:6px;padding:0 4px">
+      <p style="font-size:0.75rem;color:var(--muted);margin-top:6px;padding:0 4px">
         Y-Achse: &#216; Punkte/Spiel (niedriger = besser)
       </p>
     </div>
@@ -165,17 +189,17 @@
     <button class="nb on" onclick="goto('saison',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>SAISON
     </button>
-    <button class="nb" onclick="goto('runden',this)">
+    <button class="nb" id="nav-runden" onclick="goto('runden',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>RUNDEN
     </button>
     <button class="nb" onclick="goto('verlauf',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>VERLAUF
     </button>
     <button class="nb" onclick="goto('best',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>BESTENLISTE
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span>BESTEN<wbr>LISTE</span>
     </button>
-    <button class="nb" onclick="goto('entry',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>EINTRAGEN
+    <button class="nb" id="nav-entry" onclick="goto('entry',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><span>EIN<wbr>TRAGEN</span>
     </button>
   </nav>
 </div>
@@ -198,8 +222,8 @@
         players:[], seasons:[], rounds:[], scores:[],
         selYear:null, selYearR:null,
         chartVis:new Set(),
-        pinOk:false,
-        filterActive:false
+        pinOk:false, editRoundId:null, pendingRoundAction:null, roundBusy:false,
+        filterActive:false, participation:Object.create(null)
     };
 
     // ── API ───────────────────────────────────────────────────────
@@ -223,13 +247,44 @@
     }
 
     async function pbCreate(coll, body) {
-        var r = await fetch(BASE + "/api/collections/" + coll + "/records", {
-            method: "POST",
+        return pbWrite("POST", coll, null, body);
+    }
+
+    async function pbWrite(method, coll, id, body) {
+        var r = await fetch(BASE + "/api/collections/" + coll + "/records" + (id ? "/" + id : ""), {
+            method: method,
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(body)
+            body: body === undefined ? undefined : JSON.stringify(body)
         });
-        if (!r.ok) throw new Error(await r.text());
-        return r.json();
+        if (!r.ok) {
+            var message = await r.text();
+            try { message = JSON.parse(message).message || message; } catch (_) {}
+            var error = new Error(message);
+            error.status = r.status;
+            throw error;
+        }
+        return r.status === 204 ? null : r.json();
+    }
+
+    // PocketBase-Batch ist auf dieser Instanz deaktiviert: Teilschritte kompensieren.
+    async function applyRoundChanges(operations) {
+        var undo = [];
+        try {
+            for (var op of operations) {
+                var result = await pbWrite(op.method, op.coll, op.id, typeof op.body === "function" ? op.body() : op.body);
+                if (op.undo) undo.push(op.undo(result));
+            }
+        } catch (error) {
+            var uncertain = !error.status;
+            for (var i = undo.length - 1; i >= 0; i--) {
+                var inverse = undo[i];
+                try { await pbWrite(inverse.method, inverse.coll, inverse.id, inverse.body); }
+                catch (_) { uncertain = true; }
+            }
+            throw new Error(error.message + (uncertain
+                ? " Zustand unklar. Bitte synchronisieren und Daten prüfen."
+                : " Änderungen wurden zurückgesetzt."));
+        }
     }
 
     function buildViews() {
@@ -265,6 +320,16 @@
                 season_rank: 0
             };
         });
+        S.participation = Object.create(null);
+        S.rounds.forEach(function(round){
+            var season = seasonById[round.season];
+            if (!season) return;
+            var stats = S.participation[season.year];
+            if (!stats) stats = S.participation[season.year] = {totalRounds: 0, players: Object.create(null)};
+            stats.totalRounds++;
+        });
+        summary.forEach(function(row){ S.participation[row.year].players[row.player] = row.rounds_played; });
+        summary = summary.filter(function(row){ return qualifiesForYear(row.player, row.year); });
         var byYear = {};
         summary.forEach(function(r){ (byYear[r.year] = byYear[r.year] || []).push(r); });
         Object.keys(byYear).forEach(function(y) {
@@ -291,6 +356,7 @@
             var round  = roundById[sc.round];   if (!round)  return;
             var season = seasonById[round.season]; if (!season) return;
             var player = playerById[sc.player]; if (!player) return;
+            if (!qualifiesForYear(player.name, season.year)) return;
             var a = atAgg[player.id];
             if (!a) a = atAgg[player.id] = {
                 player_id: player.id, player: player.name, color_hex: player.color_hex,
@@ -329,20 +395,22 @@
             S.rounds  = res[2]; S.scores  = res[3];
             buildViews();
             if (!S.chartVis.size) {
-                [...new Set(S.history.map(function(r){ return r.player; }))].forEach(function(p){ S.chartVis.add(p); });
+                S.players.forEach(function(p){ S.chartVis.add(p.name); });
             }
             if (S.seasons.length && S.selYear === null) {
                 var newest = +S.seasons[0].year;
                 S.selYear = newest; S.selYearR = newest;
             }
             render(); toast("Aktualisiert", "ok");
-        } catch(e) { toast(e.message, "err"); }
+            return true;
+        } catch(e) { toast(e.message, "err"); return false; }
         finally { b.classList.remove("syncing"); b.textContent = "\u21bb Sync"; }
     }
 
     // ── Routing ───────────────────────────────────────────────────
     var active = "saison";
     function goto(v, btn) {
+        if (v !== "entry") S.pendingRoundAction = null;
         document.querySelectorAll(".view").forEach(function(el){ el.classList.remove("active"); });
         document.querySelectorAll(".nb").forEach(function(el){ el.classList.remove("on"); });
         document.getElementById("v-" + v).classList.add("active");
@@ -350,6 +418,7 @@
         active = v; render();
     }
     function render() {
+        renderFilterControl();
         if (active === "saison")  renderSaison();
         if (active === "runden")  renderRunden();
         if (active === "verlauf") renderVerlauf();
@@ -359,17 +428,13 @@
 
     // ── SAISON ────────────────────────────────────────────────────
     function renderSaison() {
-        var years = [...new Set(S.summary.map(function(r){ return +r.year; }))].sort(function(a,b){ return b-a; });
+        var years = S.seasons.map(function(s){ return +s.year; }).sort(function(a,b){ return b-a; });
         if (years.length && (!S.selYear || !years.includes(+S.selYear))) S.selYear = years[0];
 
         document.getElementById("stabs").innerHTML = years.map(function(y) {
             var on = +y === +S.selYear ? " on" : "";
             return '<button class="stab' + on + '" onclick="selY(' + y + ',\'saison\')">' + y + '</button>';
-        }).join("") +
-        '<button class="tog' + (S.filterActive ? ' on' : '') + '" onclick="toggleFilter()" ' +
-        'style="margin-left:auto;font-size:10px;padding:4px 10px" ' +
-        'title="Nur Spieler mit mind. 10% der Runden">' +
-        '&#8805;10% Runden</button>';
+        }).join("");
 
         var rows = S.summary.filter(function(r){ return +r.year === +S.selYear; })
             .filter(function(r){ return qualifiesForYear(r.player, S.selYear); })
@@ -388,7 +453,7 @@
                 var rank = i + 1;
                 var medals = {1:"&#127945;", 2:"&#127946;", 3:"&#127947;"};
                 var left = medals[rank]
-                    ? '<div style="font-size:16px;min-width:22px;text-align:center">' + medals[rank] + '</div>'
+                    ? '<div style="font-size:1.25rem;min-width:22px;text-align:center">' + medals[rank] + '</div>'
                     : '<div class="rnum">' + rank + '</div>';
                 return '<div class="rrow">' + left +
                     '<div style="flex:1;min-width:0">' +
@@ -411,16 +476,29 @@
 
     function qualifiesForYear(playerName, year) {
         if (!S.filterActive) return true;
-        var rows = S.summary.filter(function(r){ return +r.year === +year; });
-        if (!rows.length) return true;
-        var maxRounds = Math.max.apply(null, rows.map(function(r){ return +(r.rounds_played) || 0; }));
-        var minRounds = Math.ceil(maxRounds * 0.1);
-        if (minRounds === 0) return true;
-        var pr = rows.find(function(r){ return r.player === playerName; });
-        return pr ? (+(pr.rounds_played) || 0) >= minRounds : false;
+        var stats = S.participation[+year];
+        return !!stats && stats.totalRounds > 0 && (stats.players[playerName] || 0) * 10 > stats.totalRounds;
     }
 
-    function toggleFilter() { S.filterActive = !S.filterActive; render(); }
+    function renderFilterControl() {
+        var bar = document.getElementById("filterbar");
+        if (bar) bar.hidden = active === "entry";
+        var button = document.getElementById("participation-filter");
+        if (button) {
+            button.classList.toggle("on", S.filterActive);
+            button.setAttribute("aria-pressed", String(S.filterActive));
+            button.disabled = S.roundBusy;
+        }
+    }
+
+    function toggleFilter() {
+        if (S.roundBusy) return;
+        S.filterActive = !S.filterActive;
+        buildViews();
+        // Das Formular nicht ersetzen: ungespeicherte Werte bleiben erhalten.
+        if (active === "entry") renderFilterControl();
+        else render();
+    }
 
     // ── RUNDEN ────────────────────────────────────────────────────
     function renderRunden() {
@@ -440,7 +518,7 @@
             .sort(function(a,b){ return +a.round_number - +b.round_number; });
 
         if (!rounds.length) {
-            el.innerHTML = '<div class="card"><p style="color:var(--muted);font-size:12px">Noch keine Runden.</p></div>';
+            el.innerHTML = '<div class="card"><p style="color:var(--muted);font-size:1rem">Noch keine Runden.</p></div>';
             return;
         }
 
@@ -452,7 +530,11 @@
         });
 
         el.innerHTML = rounds.map(function(r) {
-            var scores = (byRound[r.id] || []).map(function(s) {
+            var scores = (byRound[r.id] || []).filter(function(s){
+                if (!S.filterActive) return true;
+                var player = S.players.find(function(p){ return p.id === s.player; });
+                return player && qualifiesForYear(player.name, season.year);
+            }).map(function(s) {
                 var p = S.players.find(function(pp){ return pp.id === s.player; });
                 var g = +s.games_played;
                 return { name: p ? p.name : "?", points: +s.points, games: g,
@@ -460,24 +542,28 @@
             }).sort(function(a,b){ return a.avg - b.avg; });
 
             var medals = ["&#127945;","&#127946;","&#127947;"];
-            var dt = r.played_on ? String(r.played_on).slice(0, 10) : "";
+            var dt = r.played_on ? String(r.played_on).slice(0, 10).split("-").reverse().join(".") : "";
             return '<div class="card" style="margin-bottom:10px">' +
                 '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">' +
                 '<div class="ct" style="margin-bottom:0">Runde ' + r.round_number + '</div>' +
-                '<div style="font-size:10px;color:var(--muted)">' + dt + '</div>' +
+                '<div style="font-size:0.8125rem;color:var(--muted)">' + dt + '</div>' +
                 '</div>' +
                 (scores.length ? scores.map(function(s,i) {
                     var c = COL[s.name] || "#888";
-                    return '<div class="row">' +
-                        '<span style="font-size:14px;min-width:20px">' + (medals[i] || "") + '</span>' +
-                        '<span style="color:' + c + ';font-weight:600;flex:1;font-size:12px">' + s.name + '</span>' +
-                        '<span style="color:' + c + ';font-size:12px;font-weight:700;min-width:44px;text-align:right">' + s.points + '</span>' +
-                        '<span style="color:var(--muted);font-size:10px;min-width:36px;text-align:right">' + s.games + 'Sp</span>' +
-                        '<span style="color:' + c + ';font-size:10px;min-width:44px;text-align:right">' +
+                    return '<div class="row round-score">' +
+                        '<span style="font-size:1.125rem;min-width:20px">' + (medals[i] || "") + '</span>' +
+                        '<span style="color:' + c + ';font-weight:600;flex:1;font-size:1rem">' + s.name + '</span>' +
+                        '<span style="color:' + c + ';font-size:1rem;font-weight:700;min-width:44px;text-align:right">' + s.points + '</span>' +
+                        '<span class="round-games" style="color:var(--muted);font-size:0.8125rem;min-width:36px">' + s.games + 'Sp</span>' +
+                        '<span style="color:' + c + ';font-size:0.8125rem;min-width:44px;text-align:right">' +
                         (s.avg != null ? "\u00d8" + s.avg.toFixed(2) : "?") + '</span>' +
                         '</div>';
-                }).join("") : '<p style="color:var(--muted);font-size:11px">Keine Ergebnisse</p>') +
-                '</div>';
+                }).join("") : '<p style="color:var(--muted);font-size:0.875rem">' +
+                    (S.filterActive ? 'Keine Ergebnisse für diesen Filter' : 'Keine Ergebnisse') + '</p>') +
+                '<div class="round-actions">' +
+                '<button class="btn btn-s" onclick="editRound(\'' + r.id + '\')"' + (S.roundBusy ? ' disabled' : '') + '>Bearbeiten</button>' +
+                '<button class="btn btn-s btn-danger" onclick="deleteRound(\'' + r.id + '\')"' + (S.roundBusy ? ' disabled' : '') + '>Löschen</button>' +
+                '</div></div>';
         }).join("");
     }
 
@@ -487,8 +573,8 @@
         var years   = [...new Set(S.history.map(function(r){ return +r.year; }))].sort(function(a,b){ return a-b; });
 
         document.getElementById("cleg").innerHTML =
-            '<button class="stab" onclick="togAll(true)" style="font-size:9px;padding:3px 8px">Alle an</button>' +
-            '<button class="stab" onclick="togAll(false)" style="font-size:9px;padding:3px 8px">Alle aus</button>' +
+            '<button class="stab" onclick="togAll(true)" style="font-size:0.75rem;padding:3px 8px">Alle an</button>' +
+            '<button class="stab" onclick="togAll(false)" style="font-size:0.75rem;padding:3px 8px">Alle aus</button>' +
             players.map(function(p) {
                 var on = S.chartVis.has(p), c = COL[p] || "#888";
                 return '<div class="chip' + (on ? "" : " off") + '"' +
@@ -510,40 +596,68 @@
         var w = cv.parentElement.clientWidth - 12, h = 300;
         cv.width = w; cv.height = h;
         var ctx = cv.getContext("2d");
-        var P = {t:8, r:36, b:26, l:38};
-        var N = 1.0, X = 3.2;
+        var P = {t:12, r:36, b:32, l:44};
+        var dm = {};
+        S.history.forEach(function(r){
+            var v = r.avg_points_per_game;
+            (dm[r.player] = dm[r.player] || {})[+r.year] = v == null || v === "" ? NaN : +v;
+        });
+        var values = [];
+        var series = players.filter(function(p){ return S.chartVis.has(p); }).map(function(p){
+            return {player: p, values: years.map(function(yr){
+                var v = dm[p] && dm[p][yr];
+                if (!Number.isFinite(v) || !qualifiesForYear(p, yr)) return null;
+                values.push(v);
+                return v;
+            })};
+        });
+
+        // Skala aus denselben Werten ableiten, die anschließend gezeichnet werden.
+        var low = values.length ? Math.min.apply(null, values) : 0;
+        var high = values.length ? Math.max.apply(null, values) : 1;
+        var padding = Math.max((high - low) * 0.1, 0.1);
+        var rawStep = (high - low + 2 * padding) / 5;
+        var magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+        var factor = rawStep / magnitude;
+        var step = (factor <= 1 ? 1 : factor <= 2 ? 2 : factor <= 5 ? 5 : 10) * magnitude;
+        var N = Math.floor((low - padding) / step) * step;
+        var X = Math.ceil((high + padding) / step) * step;
+        var decimals = Math.max(1, -Math.floor(Math.log10(step)));
+        var ticks = [];
+        for (var i = 0; i <= Math.round((X - N) / step); i++) {
+            ticks.push(Number((N + i * step).toFixed(decimals)));
+        }
+        ctx.font = "13px 'Courier New'";
+        ticks.forEach(function(v){
+            P.l = Math.max(P.l, Math.ceil(ctx.measureText(v.toFixed(decimals)).width) + 10);
+        });
         var xp = function(i){ return P.l + (i / (years.length - 1 || 1)) * (w - P.l - P.r); };
-        var yp = function(v){ return P.t + (Math.max(N, Math.min(X, v)) - N) / (X - N) * (h - P.t - P.b); };
+        var yp = function(v){ return P.t + (v - N) / (X - N) * (h - P.t - P.b); };
         ctx.clearRect(0, 0, w, h);
-        [1.0, 1.5, 2.0, 2.5, 3.0].forEach(function(v) {
+        ticks.forEach(function(v) {
             var y = yp(v);
             ctx.beginPath(); ctx.moveTo(P.l, y); ctx.lineTo(w - P.r, y);
             ctx.strokeStyle = v === 2 ? "#c8d0da" : "#eef1f5";
             ctx.setLineDash(v === 2 ? [4,4] : []);
             ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
-            ctx.fillStyle = "#7a8fa6"; ctx.font = "9px 'Courier New'";
-            ctx.textAlign = "right"; ctx.fillText(v.toFixed(1), P.l - 3, y + 4);
+            ctx.fillStyle = "#7a8fa6"; ctx.font = "13px 'Courier New'";
+            ctx.textAlign = "right"; ctx.fillText(v.toFixed(decimals), P.l - 3, y + 4);
         });
-        ctx.fillStyle = "#7a8fa6"; ctx.font = "9px 'Courier New'"; ctx.textAlign = "center";
+        ctx.fillStyle = "#7a8fa6"; ctx.font = "13px 'Courier New'"; ctx.textAlign = "center";
         years.forEach(function(yr, i) {
             ctx.fillText(String(yr).slice(2), xp(i), h - P.b + 14);
         });
-        var dm = {};
-        S.history.forEach(function(r){ (dm[r.player] = dm[r.player] || {})[+r.year] = +r.avg_points_per_game; });
-        players.forEach(function(p) {
-            if (!S.chartVis.has(p)) return;
-            var c = COL[p] || "#888";
+        series.forEach(function(s) {
+            var c = COL[s.player] || "#888";
             ctx.strokeStyle = c; ctx.lineWidth = 2; ctx.lineJoin = "round";
             ctx.beginPath(); var f = true;
-            years.forEach(function(yr, i) {
-                var v = dm[p] && dm[p][yr];
-                if (!v || v > 3.2 || !qualifiesForYear(p, yr)) return;
+            s.values.forEach(function(v, i) {
+                if (v === null) return;
                 if (f) { ctx.moveTo(xp(i), yp(v)); f = false; } else { ctx.lineTo(xp(i), yp(v)); }
             });
             ctx.stroke();
-            years.forEach(function(yr, i) {
-                var v = dm[p] && dm[p][yr];
-                if (!v || v > 3.2 || !qualifiesForYear(p, yr)) return;
+            s.values.forEach(function(v, i) {
+                if (v === null) return;
                 ctx.beginPath(); ctx.arc(xp(i), yp(v), 3, 0, Math.PI * 2);
                 ctx.fillStyle = c; ctx.fill();
             });
@@ -559,37 +673,25 @@
     // ── BESTENLISTE ───────────────────────────────────────────────
     function renderBest() {
         var el = document.getElementById("bbody");
-        if (!S.alltime.length) { el.innerHTML = '<div class="ld"><div class="sp"></div>Lade\u2026</div>'; return; }
+        if (!S.alltime.length) {
+            el.innerHTML = '<div class="ld">' + (S.filterActive ? 'Keine Daten für diesen Filter' : 'Keine Daten') + '</div>';
+            return;
+        }
         var byYear = {};
         S.summary.forEach(function(r){ (byYear[+r.year] = byYear[+r.year] || []).push(r); });
         var winners = {};
         Object.entries(byYear).forEach(function(kv) {
             var yr = kv[0], rows = kv[1];
             var candidates = rows.filter(function(r){ return qualifiesForYear(r.player, +yr); });
-            if (!candidates.length) candidates = rows;
+            if (!candidates.length) return;
             var w = candidates.reduce(function(b,r){ return +r.avg_points_per_game < +b.avg_points_per_game ? r : b; });
             winners[yr] = w.player;
         });
         var wc = {};
         Object.values(winners).forEach(function(p){ wc[p] = (wc[p] || 0) + 1; });
 
-        var atRows = (function() {
-            if (!S.filterActive) return S.alltime.filter(function(r){ return r.seasons_played >= 3; })
-                .map(function(r){ return {name:r.player, avg:+r.alltime_avg, seasons:r.seasons_played, active:r.active}; });
-            var pm2 = {};
-            S.summary.forEach(function(r) {
-                if (!qualifiesForYear(r.player, +r.year)) return;
-                if (!pm2[r.player]) pm2[r.player] = {totalPts:0, totalGms:0, seasons:0, active:true};
-                pm2[r.player].totalPts += +r.avg_points_per_game * +r.total_games;
-                pm2[r.player].totalGms += +r.total_games;
-                pm2[r.player].seasons++;
-            });
-            var at2 = S.alltime.reduce(function(m,r){ m[r.player] = r; return m; }, {});
-            return Object.keys(pm2).filter(function(n){ return pm2[n].seasons >= 3; }).map(function(n) {
-                return {name:n, avg:pm2[n].totalGms ? pm2[n].totalPts/pm2[n].totalGms : 0,
-                    seasons:pm2[n].seasons, active: at2[n] ? at2[n].active : true};
-            }).sort(function(a,b){ return a.avg - b.avg; });
-        })();
+        var atRows = S.alltime.filter(function(r){ return r.seasons_played >= 3; })
+            .map(function(r){ return {name:r.player, avg:+r.alltime_avg, seasons:r.seasons_played, active:r.active}; });
 
         el.innerHTML =
             '<div class="card"><div class="ct">Gesamtrangliste</div>' +
@@ -651,18 +753,18 @@
                 var yr = kv[0], p = kv[1], c = COL[p] || "#888";
                 var row = S.summary.find(function(r){ return +r.year === +yr && r.player === p; });
                 return '<div class="row">' +
-                    '<span style="color:var(--muted);font-size:10px;min-width:44px">' + yr + '</span>' +
-                    '<span style="color:' + c + ';font-weight:600;font-size:12px;flex:1">' + p + '</span>' +
-                    '<span style="color:var(--muted);font-size:10px">' + (row ? (+row.avg_points_per_game).toFixed(4) : "") + '</span>' +
+                    '<span style="color:var(--muted);font-size:0.8125rem;min-width:44px">' + yr + '</span>' +
+                    '<span style="color:' + c + ';font-weight:600;font-size:1rem;flex:1">' + p + '</span>' +
+                    '<span style="color:var(--muted);font-size:0.8125rem">' + (row ? (+row.avg_points_per_game).toFixed(4) : "") + '</span>' +
                     '</div>';
             }).join("") + '</div>' +
             (function() {
                 var allYears = [...new Set(S.summary.map(function(r){ return +r.year; }))].sort(function(a,b){ return a-b; });
                 var pm = {};
                 S.summary.forEach(function(r){
+                    if (!qualifiesForYear(r.player, +r.year)) return;
                     if (!pm[r.player]) pm[r.player] = {};
-                    if (qualifiesForYear(r.player, +r.year))
-                        pm[r.player][+r.year] = +r.season_rank;
+                    pm[r.player][+r.year] = +r.season_rank;
                 });
                 var stats = Object.keys(pm).map(function(name) {
                     var ranks = Object.values(pm[name]);
@@ -691,12 +793,113 @@
                 }).join("");
                 return '<div class="card" style="padding:14px 14px 8px;overflow-x:auto">' +
                     '<div class="ct" style="margin-bottom:8px">Platzierungen</div>' +
-                    '<table style="width:100%;border-collapse:collapse;font-size:10px">' +
+                    '<table style="width:100%;border-collapse:collapse;font-size:0.8125rem">' +
                     '<thead>' + thead + '</thead><tbody>' + tbody + '</tbody></table></div>';
             })();
     }
 
     // ── EINTRAGEN ─────────────────────────────────────────────────
+    function setRoundBusy(busy) {
+        S.roundBusy = busy;
+        document.querySelectorAll('#v-entry input, #v-entry select, #v-entry button, #rbody .round-actions button, #sync-btn, #participation-filter')
+            .forEach(function(el){ el.disabled = busy; });
+    }
+
+    function unlockRoundAction(action, id) {
+        if (S.pinOk) return true;
+        S.pendingRoundAction = {action: action, id: id};
+        goto("entry", document.getElementById("nav-entry"));
+        return false;
+    }
+
+    function editRound(id) {
+        if (S.roundBusy || !unlockRoundAction("edit", id)) return;
+        var round = S.rounds.find(function(r){ return r.id === id; });
+        if (!round) { toast("Runde nicht gefunden", "err"); return; }
+        S.editRoundId = id;
+        goto("entry", document.getElementById("nav-entry"));
+    }
+
+    function cancelEditRound() {
+        if (S.roundBusy) return;
+        S.editRoundId = null;
+        goto("runden", document.getElementById("nav-runden"));
+    }
+
+    function lockEntry() {
+        if (S.roundBusy) return;
+        S.pinOk = false;
+        S.editRoundId = null;
+        S.pendingRoundAction = null;
+        renderEntry();
+    }
+
+    function roundPlayers() {
+        return S.players.filter(function(p){
+            return p.active || (S.editRoundId && S.scores.some(function(s){
+                return s.round === S.editRoundId && s.player === p.id;
+            }));
+        });
+    }
+
+    function scoreBody(score) {
+        return {round: score.round, player: score.player, points: +score.points, games_played: +score.games_played};
+    }
+
+    function removeScoreOperation(score) {
+        return {method: "DELETE", coll: "round_scores", id: score.id,
+            undo: function(){ return {method: "POST", coll: "round_scores",
+                body: Object.assign({id: score.id}, scoreBody(score))}; }};
+    }
+
+    function roundEditOperations(round, body, scores) {
+        var operations = [{method: "PATCH", coll: "rounds", id: round.id, body: body,
+            undo: function(){ return {method: "PATCH", coll: "rounds", id: round.id,
+                body: {season: round.season, round_number: round.round_number, played_on: round.played_on || ""}}; }}];
+        var previous = S.scores.filter(function(s){ return s.round === round.id; });
+        scores.forEach(function(score){
+            var old = previous.find(function(s){ return s.player === score.player; });
+            if (old) {
+                if (+old.points === score.points && +old.games_played === score.games_played) return;
+                operations.push({method: "PATCH", coll: "round_scores", id: old.id,
+                    body: {points: score.points, games_played: score.games_played},
+                    undo: function(){ return {method: "PATCH", coll: "round_scores", id: old.id,
+                        body: {points: +old.points, games_played: +old.games_played}}; }});
+            } else {
+                operations.push({method: "POST", coll: "round_scores",
+                    body: Object.assign({round: round.id}, score),
+                    undo: function(created){ return {method: "DELETE", coll: "round_scores", id: created.id}; }});
+            }
+        });
+        previous.forEach(function(score){
+            if (!scores.some(function(s){ return s.player === score.player; })) operations.push(removeScoreOperation(score));
+        });
+        return operations;
+    }
+
+    async function deleteRound(id) {
+        if (S.roundBusy || !unlockRoundAction("delete", id)) return;
+        var round = S.rounds.find(function(r){ return r.id === id; });
+        if (!round) { toast("Runde nicht gefunden", "err"); return; }
+        var season = S.seasons.find(function(s){ return s.id === round.season; });
+        S.selYearR = season ? +season.year : S.selYearR;
+        goto("runden", document.getElementById("nav-runden"));
+        if (!confirm("Runde " + round.round_number + " (Saison " + (season ? season.year : "?") +
+            (round.played_on ? ", " + String(round.played_on).slice(0, 10) : "") +
+            ") mit allen Ergebnissen endgültig löschen?")) return;
+        if (!navigator.onLine) { toast("Zum Löschen ist eine Verbindung nötig", "err"); return; }
+        var operations = S.scores.filter(function(s){ return s.round === id; }).map(removeScoreOperation);
+        operations.push({method: "DELETE", coll: "rounds", id: id});
+        setRoundBusy(true);
+        try {
+            await applyRoundChanges(operations);
+            if (S.editRoundId === id) S.editRoundId = null;
+            var synced = await doSync();
+            toast("Runde " + round.round_number + " gelöscht" + (synced === false ? ". Bitte erneut synchronisieren." : ""), synced === false ? "err" : "ok");
+        } catch (error) { toast("Löschen fehlgeschlagen: " + error.message, "err"); }
+        finally { setRoundBusy(false); }
+    }
+
     function renderEntry() {
         if (!S.pinOk) { renderPin(); return; }
         renderEntryForm();
@@ -704,18 +907,25 @@
 
     function renderPin() {
         document.getElementById("ebody").innerHTML =
-            '<div class="pin-wrap"><div class="pin-box">' +
+            '<div class="pin-wrap"><form class="pin-box" autocomplete="off" onsubmit="event.preventDefault();chkPin({key:\'Enter\'})">' +
             '<h2>&#128274; Eintragen</h2>' +
-            '<p style="color:var(--muted);font-size:11px;margin-bottom:14px">PIN eingeben:</p>' +
-            '<input type="password" inputmode="numeric" id="pinf" class="pini" maxlength="6" placeholder="\u2022\u2022\u2022\u2022" onkeyup="chkPin(event)">' +
+            '<p style="color:var(--muted);font-size:0.875rem;margin-bottom:14px">PIN eingeben:</p>' +
+            '<input type="password" inputmode="numeric" id="pinf" name="pin" class="pini" maxlength="6" autocomplete="off" placeholder="\u2022\u2022\u2022\u2022">' +
             '<div class="perr" id="perr"></div>' +
-            '<button class="btn btn-p" onclick="chkPin({key:\'Enter\'})">Entsperren</button>' +
-            '</div></div>';
+            '<button type="submit" class="btn btn-p">Entsperren</button>' +
+            '</form></div>';
     }
     function chkPin(e) {
         if (e.key !== "Enter") return;
         var v = (document.getElementById("pinf") || {}).value || "";
-        if (v === PIN) { S.pinOk = true; renderEntry(); }
+        if (v === PIN) {
+            S.pinOk = true;
+            var pending = S.pendingRoundAction;
+            S.pendingRoundAction = null;
+            if (pending && pending.action === "edit") editRound(pending.id);
+            else if (pending && pending.action === "delete") deleteRound(pending.id);
+            else renderEntry();
+        }
         else document.getElementById("perr").textContent = "Falscher PIN";
     }
 
@@ -727,21 +937,25 @@
     function onSeasonChange() {
         var sel = document.getElementById("rseason");
         var rnr = document.getElementById("rnr");
-        if (sel && rnr) rnr.value = estNextRound(sel.value);
+        if (sel && rnr && !S.editRoundId) rnr.value = estNextRound(sel.value);
     }
 
     function renderEntryForm() {
         if (!S.seasons.length) {
             document.getElementById("ebody").innerHTML =
-                '<div class="card"><p style="color:var(--muted);font-size:12px">Keine Saisonen gefunden.</p></div>';
+                '<div class="card"><p style="color:var(--muted);font-size:1rem">Keine Saisonen gefunden.</p></div>';
             return;
         }
-        var activePlayers = S.players.filter(function(p){ return p.active; });
-        var defSeason = S.seasons.find(function(s){ return +s.year === +S.selYearR; })
+        var editing = S.rounds.find(function(r){ return r.id === S.editRoundId; });
+        if (S.editRoundId && !editing) { S.editRoundId = null; toast("Runde nicht mehr vorhanden", "err"); }
+        var activePlayers = roundPlayers();
+        var existingScores = editing ? S.scores.filter(function(s){ return s.round === editing.id; }) : [];
+        var defSeason = (editing && S.seasons.find(function(s){ return s.id === editing.season; }))
+            || S.seasons.find(function(s){ return +s.year === +S.selYearR; })
             || S.seasons.find(function(s){ return +s.year === CUR; })
             || S.seasons[0];
-        var defNr   = estNextRound(defSeason.id);
-        var today   = new Date().toISOString().slice(0, 10);
+        var defNr   = editing ? +editing.round_number : estNextRound(defSeason.id);
+        var today   = editing ? String(editing.played_on || "").slice(0, 10) : new Date().toISOString().slice(0, 10);
 
         var seasonOpts = S.seasons.map(function(s) {
             var sel = s.id === defSeason.id ? " selected" : "";
@@ -751,25 +965,26 @@
 
         var playerRows = activePlayers.map(function(p) {
             var c = COL[p.name] || "#888";
+            var score = existingScores.find(function(s){ return s.player === p.id; });
             return '<div class="per" id="pe-' + p.id + '">' +
                 '<div class="per-hdr">' +
                 '<div class="dot" style="background:' + c + '"></div>' +
-                '<span class="pname">' + p.name + '</span>' +
-                '<button class="tog" id="tog-' + p.id + '" onclick="togPlayer(' + p.id + ')">Dabei?</button>' +
+                '<span class="pname">' + p.name + (p.active ? '' : ' (inaktiv)') + '</span>' +
+                '<button class="tog' + (score ? ' on' : '') + '" id="tog-' + p.id + '" onclick="togPlayer(\'' + p.id + '\')">' + (score ? '\u2713 Dabei' : 'Dabei?') + '</button>' +
                 '</div>' +
-                '<div class="pflds hide" id="pf-' + p.id + '">' +
+                '<div class="pflds' + (score ? '' : ' hide') + '" id="pf-' + p.id + '">' +
                 '<div><div class="pfl">PUNKTE</div>' +
-                '<input type="number" inputmode="decimal" class="pfi" id="pts-' + p.id + '" placeholder="0" min="0">' +
+                '<input type="number" inputmode="decimal" class="pfi" id="pts-' + p.id + '" value="' + (score ? +score.points : '') + '" placeholder="0" step="any">' +
                 '</div>' +
                 '<div><div class="pfl">SPIELE</div>' +
-                '<input type="number" inputmode="decimal" class="pfi" id="gms-' + p.id + '" placeholder="0" min="0">' +
+                '<input type="number" inputmode="numeric" class="pfi" id="gms-' + p.id + '" value="' + (score ? +score.games_played : '') + '" placeholder="0" min="1" step="1">' +
                 '</div>' +
                 '</div>' +
                 '</div>';
         }).join("");
 
         document.getElementById("ebody").innerHTML =
-            '<div class="card"><div class="ct">Neue Runde eintragen</div>' +
+            '<div class="card"><div class="ct">' + (editing ? 'Runde ' + editing.round_number + ' bearbeiten' : 'Neue Runde eintragen') + '</div>' +
             '<div style="margin-bottom:12px"><label class="fl">Saison</label>' +
             '<select id="rseason" class="fsel" onchange="onSeasonChange()">' + seasonOpts + '</select></div>' +
             '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px">' +
@@ -781,17 +996,20 @@
             '<div class="card"><div class="ct">Ergebnisse pro Spieler</div>' +
             '<div class="cs">Spieler antippen zum Aktivieren, dann Punkte und Spiele eintragen</div>' +
             '<div id="player-entries">' + playerRows + '</div></div>' +
-            '<button class="btn btn-p" onclick="submitRound()">Runde speichern</button>' +
+            '<button class="btn btn-p" onclick="submitRound()">' + (editing ? 'Änderungen speichern' : 'Runde speichern') + '</button>' +
+            (editing ? '<button class="btn btn-s" onclick="cancelEditRound()">Abbrechen</button>' : '') +
             '<div class="card" style="margin-top:14px"><div class="ct">Neue Saison anlegen</div>' +
             '<div style="margin-bottom:10px"><label class="fl">Startjahr</label>' +
             '<input type="number" id="ns-year" class="fi" value="' + new Date().getFullYear() + '" min="2000" max="2099"></div>' +
             '<div style="margin-bottom:12px"><label class="fl">Bezeichnung (optional)</label>' +
             '<input type="text" id="ns-label" class="fi" placeholder="z.B. ab 01.03.2026"></div>' +
             '<button class="btn btn-s" onclick="createSeason()">+ Saison anlegen</button></div>' +
-            '<button class="btn btn-s" onclick="S.pinOk=false;renderEntry()" style="margin-top:4px">&#128274; Sperren</button>';
+            '<button class="btn btn-s" onclick="lockEntry()" style="margin-top:4px">&#128274; Sperren</button>';
+        if (S.roundBusy) setRoundBusy(true);
     }
 
     function togPlayer(id) {
+        if (S.roundBusy) return;
         var tog  = document.getElementById("tog-" + id);
         var flds = document.getElementById("pf-" + id);
         var on   = !tog.classList.contains("on");
@@ -802,6 +1020,7 @@
     }
 
     async function createSeason() {
+        if (S.roundBusy) return;
         var yearEl = document.getElementById("ns-year");
         var lblEl  = document.getElementById("ns-label");
         var year   = parseInt(yearEl ? yearEl.value : "");
@@ -823,53 +1042,77 @@
     }
 
     async function submitRound() {
+        if (S.roundBusy) return;
+        if (!S.pinOk) { renderPin(); return; }
+        if (!navigator.onLine) { toast("Zum Speichern ist eine Verbindung nötig", "err"); return; }
+        var editing = S.rounds.find(function(r){ return r.id === S.editRoundId; });
+        if (S.editRoundId && !editing) { toast("Runde nicht mehr vorhanden", "err"); return; }
         var nrEl = document.getElementById("rnr");
         var dtEl = document.getElementById("rdate");
         var rsEl = document.getElementById("rseason");
-        var nr   = parseInt(nrEl ? nrEl.value : "");
+        var nr   = Number(nrEl ? nrEl.value : "");
         var dt   = dtEl ? dtEl.value : "";
-        if (!nr || nr < 1) { toast("Runden-Nr. fehlt", "err"); return; }
+        if (!Number.isInteger(nr) || nr < 1) { toast("Runden-Nr. muss eine positive ganze Zahl sein", "err"); return; }
 
         var selSid = rsEl ? rsEl.value : "";
         var season = S.seasons.find(function(s){ return s.id === selSid; });
         if (!season) { toast("Saison nicht gefunden", "err"); return; }
+        if (S.rounds.some(function(r){ return r.season === selSid && +r.round_number === nr && r.id !== S.editRoundId; })) {
+            toast("Runde " + nr + " existiert in dieser Saison bereits", "err"); return;
+        }
 
         var scores = [];
-        S.players.filter(function(p){ return p.active; }).forEach(function(p) {
+        var invalidPlayer = null;
+        roundPlayers().forEach(function(p) {
             var tog = document.getElementById("tog-" + p.id);
             if (!tog || !tog.classList.contains("on")) return;
             var ptsEl = document.getElementById("pts-" + p.id);
             var gmsEl = document.getElementById("gms-" + p.id);
-            var pts = parseFloat(ptsEl ? ptsEl.value : "");
-            var gms = parseFloat(gmsEl ? gmsEl.value : "");
-            if (isNaN(pts) || isNaN(gms) || gms <= 0) return;
+            var pts = Number(ptsEl ? ptsEl.value : "");
+            var gms = Number(gmsEl ? gmsEl.value : "");
+            if (!ptsEl || !ptsEl.value.trim() || !Number.isFinite(pts) || !Number.isInteger(gms) || gms <= 0) {
+                invalidPlayer = p.name; return;
+            }
             scores.push({player: p.id, points: pts, games_played: gms});
         });
 
+        if (invalidPlayer !== null) { toast("Bitte gültige Punkte und eine positive ganze Spielezahl für " + invalidPlayer + " eingeben", "err"); return; }
         if (!scores.length) { toast("Mindestens 1 Spieler mit Werten", "err"); return; }
+        if (editing && S.scores.some(function(s){
+            return s.round === editing.id && !S.players.some(function(p){ return p.id === s.player; });
+        })) { toast("Ein bisheriger Teilnehmer fehlt. Bitte synchronisieren und Daten prüfen.", "err"); return; }
 
         var totalGames = scores.reduce(function(sum, s){ return sum + s.games_played; }, 0);
         if (totalGames % 4 !== 0) { toast("Spiele-Summe (" + totalGames + ") nicht durch 4 teilbar", "err"); return; }
 
-        try {
-            var round = await pbCreate("rounds", {
-                season: season.id, round_number: nr, played_on: toPbDate(dt)
+        var body = {season: season.id, round_number: nr, played_on: toPbDate(dt)};
+        var operations;
+        if (editing) operations = roundEditOperations(editing, body, scores);
+        else {
+            var createdRound;
+            operations = [{method: "POST", coll: "rounds", body: body,
+                undo: function(created){
+                    createdRound = created;
+                    return {method: "DELETE", coll: "rounds", id: created.id};
+                }}];
+            scores.forEach(function(score){
+                operations.push({method: "POST", coll: "round_scores",
+                    body: function(){ return Object.assign({round: createdRound.id}, score); },
+                    undo: function(created){ return {method: "DELETE", coll: "round_scores", id: created.id}; }});
             });
-            for (var i = 0; i < scores.length; i++) {
-                try {
-                    await pbCreate("round_scores", Object.assign({round: round.id}, scores[i]));
-                } catch(scErr) {
-                    // Kompensation: gerade angelegte Runde wieder löschen
-                    try {
-                        await fetch(BASE + "/api/collections/rounds/records/" + round.id, {method: "DELETE"});
-                    } catch(_) {}
-                    throw scErr;
-                }
-            }
-            toast("Runde " + nr + " gespeichert (" + scores.length + " Spieler)", "ok");
-            await doSync();
-            renderEntryForm();
-        } catch(e) { toast("Fehler: " + e.message, "err"); }
+        }
+        setRoundBusy(true);
+        try {
+            await applyRoundChanges(operations);
+            S.editRoundId = null;
+            S.selYearR = +season.year;
+            var synced = await doSync();
+            if (editing) goto("runden", document.getElementById("nav-runden"));
+            else renderEntryForm();
+            toast("Runde " + nr + " gespeichert (" + scores.length + " Spieler)" +
+                (synced === false ? ". Bitte erneut synchronisieren." : ""), synced === false ? "err" : "ok");
+        } catch(e) { toast("Speichern fehlgeschlagen: " + e.message, "err"); }
+        finally { setRoundBusy(false); }
     }
 
     // ── Toast ─────────────────────────────────────────────────────
@@ -892,7 +1135,7 @@
             document.getElementById("sbody").innerHTML =
                 '<div class="card" style="border-color:var(--accent)">' +
                 '<div class="ct" style="color:var(--accent)">&#9881; config.js befüllen</div>' +
-                '<p style="color:var(--muted);font-size:11px;line-height:1.7">' +
+                '<p style="color:var(--muted);font-size:0.875rem;line-height:1.7">' +
                 '<b>pocketbaseUrl</b> in <b>config.js</b> eintragen, dann neu laden.</p></div>';
             return;
         }
