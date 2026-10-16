@@ -1,5 +1,5 @@
 // Doppelkopf Liste – Service Worker
-const CACHE = "doko-v5";
+const CACHE = "doko-v13";
 const ASSETS = ["/dokliste/manifest.json", "/dokliste/config.js", "/dokliste/icon-192.png", "/dokliste/icon-512.png"];
 
 self.addEventListener("install", e => {
@@ -17,31 +17,24 @@ self.addEventListener("activate", e => {
 });
 
 self.addEventListener("fetch", e => {
+  // Schreibzugriffe dürfen weder gecacht noch aus dem Cache beantwortet werden.
+  if (e.request.method !== "GET") return;
   const url = new URL(e.request.url);
 
-  // PocketBase API: Network-first, Cache-Fallback
-  if (url.pathname.startsWith("/api/")) {
-    e.respondWith(
-      fetch(e.request)
-        .then(res => {
-          caches.open(CACHE).then(c => c.put(e.request, res.clone()));
-          return res;
-        })
-        .catch(() => caches.match(e.request))
+  // API und HTML: Network-first, Cache-Fallback
+  if (url.pathname.startsWith("/api/") || e.request.mode === "navigate") {
+    const networkResponse = fetch(e.request);
+    e.waitUntil(
+      networkResponse.then(res => {
+        if (!res.ok) return;
+        // Vor jeder asynchronen Cache-Arbeit kopieren: Die App liest parallel.
+        const copy = res.clone();
+        return caches.open(CACHE).then(c => c.put(e.request, copy));
+      }).catch(() => {
+        // Ein Cache-Fehler darf die erfolgreiche Netzwerkantwort nicht stören.
+      })
     );
-    return;
-  }
-
-  // HTML-Navigation: Network-first → immer aktuelle Version
-  if (e.request.mode === "navigate") {
-    e.respondWith(
-      fetch(e.request)
-        .then(res => {
-          caches.open(CACHE).then(c => c.put(e.request, res.clone()));
-          return res;
-        })
-        .catch(() => caches.match(e.request))
-    );
+    e.respondWith(networkResponse.catch(() => caches.match(e.request)));
     return;
   }
 
